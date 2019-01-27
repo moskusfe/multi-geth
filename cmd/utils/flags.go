@@ -651,7 +651,7 @@ var (
 	}
 	EVMInterpreterFlag = cli.StringFlag{
 		Name:  "vm.evm",
-		Usage: "External EVM configuration (default = built-in interpreter)",
+		Usage: "External EVM configuration (default = built-in interpreter, optionally: =svm)",
 		Value: "",
 	}
 )
