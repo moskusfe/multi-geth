@@ -969,7 +969,7 @@
           "description": "hash of start block",
           "schema": {
             "type": "integer",
-            "format": "int64"
+            "minimum": 0
           }
         },
         {
@@ -979,7 +979,7 @@
             "oneOf": [
               {
                 "type": "integer",
-                "format": "int64"
+                "minimum": 0
               },
               {
                 "$ref": "#/components/schemas/Null"
@@ -1436,7 +1436,8 @@
           "description": "base url",
           "required": true,
           "schema": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           }
         },
         {
