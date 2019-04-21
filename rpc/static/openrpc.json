@@ -1,5 +1,5 @@
 {
-  "openrpc": "1.0.0-rc1",
+  "openrpc": "1.0.0",
   "info": {
     "version": "1.0.0",
     "title": "Multi Geth RPC",
@@ -1027,14 +1027,16 @@
           "name": "blockNumber",
           "description": "number of target block",
           "schema": {
-            "$ref": "#/components/schemas/BlockNumber"
+            "type": "integer"
           }
         }
       ],
       "result": {
         "name": "result",
         "description": "pretty printed block",
-        "schema": {}
+        "schema": {
+          "type": "string"
+        }
       }
     },
     {
@@ -1086,10 +1088,21 @@
           }
         },
         {
-          "name": "blockHash",
-          "description": "hash for a block",
+          "name": "StdTraceConfig",
+          "description": "holds extra paramters to standard-json trace functions",
           "schema": {
-            "$ref": "#/components/schemas/BlockHash"
+            "type": "object",
+            "properties": {
+              "logConfig": {
+                "$ref": "#/components/schemas/LogConfig"
+              },
+              "reexec": {
+                "type": "integer"
+              },
+              "txHash": {
+                "$ref": "#/components/schemas/TransactionHash"
+              }
+            }
           }
         }
       ],
@@ -1173,7 +1186,7 @@
         }
       ],
       "result": {
-        "name": "",
+        "name": "badBlockResult",
         "schema": {
           "description": "",
           "$ref": "#/components/schemas/Bytes"
@@ -1725,6 +1738,29 @@
   ],
   "components": {
     "schemas": {
+      "LogConfig": {
+        "type": "object",
+        "description": "Logconfig are the configuration options for the structured logger for the EVM.",
+        "properties": {
+          "disableMemory": {
+            "type": "boolean"
+          },
+          "disableStack": {
+            "type": "boolean"
+          },
+          "disableStorage": {
+            "type": "boolean"
+          },
+          "debug": {
+            "description": "print debug during capture end",
+            "type": "boolean"
+          },
+          "limit": {
+            "description": "maximum length of output, but zero means unlimited",
+            "type": "integer"
+          }
+        }
+      },
       "CodeResponse": {
         "description": "An object containing information about the code.",
         "type": "object",
@@ -1930,6 +1966,7 @@
       },
       "BlockRLP": {
         "type": "string",
+        "pattern": "^[a-fA-F\\d]+$",
         "description": "The hex representation of the block's RLP"
       },
       "BlockNumberTag": {
