@@ -36,11 +36,14 @@
         }
       ],
       "result": {
-        "name": "block",
-        "description": "A block",
-        "schema": {
-          "$ref": "#/components/schemas/Block"
-        }
+        "oneOf": [
+          {
+            "$ref": "#/components/contentDescriptors/Block"
+          },
+          {
+            "$ref": "#/components/contentDescriptors/Null"
+          }
+        ]
       }
     },
     {
@@ -60,11 +63,14 @@
         }
       ],
       "result": {
-        "name": "block",
-        "description": "A block",
-        "schema": {
-          "$ref": "#/components/schemas/Block"
-        }
+        "oneOf": [
+          {
+            "$ref": "#/components/contentDescriptors/Block"
+          },
+          {
+            "$ref": "#/components/contentDescriptors/Null"
+          }
+        ]
       }
     },
     {
@@ -72,11 +78,7 @@
       "summary": "Returns the number of most recent block.",
       "params": [],
       "result": {
-        "name": "blockNumber",
-        "schema": {
-          "type": "string",
-          "description": "Hex string representation of the current block number the client is on"
-        }
+        "$ref": "#/components/contentDescriptors/BlockNumber"
       }
     },
     {
@@ -112,10 +114,17 @@
         }
       ],
       "result": {
-        "name": "nonce",
-        "schema": {
-          "$ref": "#/components/schemas/Nonce"
-        }
+        "oneOf": [
+          {
+            "name": "nonce",
+            "schema": {
+              "$ref": "#/components/schemas/Nonce"
+            }
+          },
+          {
+            "$ref": "#/components/contentDescriptors/Null"
+          }
+        ]
       }
     },
     {
@@ -127,7 +136,14 @@
         }
       ],
       "result": {
-        "$ref": "#/components/contentDescriptors/Transaction"
+        "oneOf": [
+          {
+            "$ref": "#/components/contentDescriptors/Transaction"
+          },
+          {
+            "$ref": "#/components/contentDescriptors/Null"
+          }
+        ]
       }
     },
     {
@@ -147,7 +163,14 @@
         }
       ],
       "result": {
-        "$ref": "#/components/contentDescriptors/Transaction"
+        "oneOf": [
+          {
+            "$ref": "#/components/contentDescriptors/Transaction"
+          },
+          {
+            "$ref": "#/components/contentDescriptors/Null"
+          }
+        ]
       }
     },
     {
@@ -167,7 +190,14 @@
         }
       ],
       "result": {
-        "$ref": "#/components/contentDescriptors/Transaction"
+        "oneOf": [
+          {
+            "$ref": "#/components/contentDescriptors/Transaction"
+          },
+          {
+            "$ref": "#/components/contentDescriptors/Null"
+          }
+        ]
       }
     },
     {
@@ -179,10 +209,17 @@
         }
       ],
       "result": {
-        "name": "receipt",
-        "schema": {
-          "$ref": "#/components/schemas/Receipt"
-        }
+        "oneOf": [
+          {
+            "name": "receipt",
+            "schema": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          },
+          {
+            "$ref": "#/components/contentDescriptors/Null"
+          }
+        ]
       }
     },
     {
@@ -204,7 +241,14 @@
       "result": {
         "name": "uncle",
         "schema": {
-          "$ref": "#/components/schemas/Uncle"
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uncle"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
         }
       }
     },
@@ -230,10 +274,17 @@
         }
       ],
       "result": {
-        "name": "uncle",
-        "schema": {
-          "$ref": "#/components/schemas/Uncle"
-        }
+        "oneOf": [
+          {
+            "name": "uncle",
+            "schema": {
+              "$ref": "#/components/schemas/Uncle"
+            }
+          },
+          {
+            "$ref": "#/components/contentDescriptors/Null"
+          }
+        ]
       }
     },
     {
@@ -444,36 +495,43 @@
       "result": {
         "name": "account",
         "schema": {
-          "type": "object",
-          "description": "The merkle proofs of the specified account connecting them to the blockhash of the block specified",
-          "properties": {
-            "address": {
-              "description": "The address of the account or contract of the request",
-              "$ref": "#/components/schemas/Address"
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "The merkle proofs of the specified account connecting them to the blockhash of the block specified",
+              "properties": {
+                "address": {
+                  "description": "The address of the account or contract of the request",
+                  "$ref": "#/components/schemas/Address"
+                },
+                "accountProof": {
+                  "$ref": "#/components/schemas/AccountProof"
+                },
+                "balance": {
+                  "description": "The Ether balance of the account or contract of the request",
+                  "$ref": "#/components/schemas/Integer"
+                },
+                "codeHash": {
+                  "description": "The code hash of the contract of the request (keccak(NULL) if external account)",
+                  "$ref": "#/components/schemas/Keccak"
+                },
+                "nonce": {
+                  "description": "The transaction count of the account or contract of the request",
+                  "$ref": "#/components/schemas/Nonce"
+                },
+                "storageHash": {
+                  "description": "The storage hash of the contract of the request (keccak(rlp(NULL)) if external account)",
+                  "$ref": "#/components/schemas/Keccak"
+                },
+                "storageProof": {
+                  "$ref": "#/components/schemas/StorageProof"
+                }
+              }
             },
-            "accountProof": {
-              "$ref": "#/components/schemas/AccountProof"
-            },
-            "balance": {
-              "description": "The Ether balance of the account or contract of the request",
-              "$ref": "#/components/schemas/Integer"
-            },
-            "codeHash": {
-              "description": "The code hash of the contract of the request (keccak(NULL) if external account)",
-              "$ref": "#/components/schemas/Keccak"
-            },
-            "nonce": {
-              "description": "The transaction count of the account or contract of the request",
-              "$ref": "#/components/schemas/Nonce"
-            },
-            "storageHash": {
-              "description": "The storage hash of the contract of the request (keccak(rlp(NULL)) if external account)",
-              "$ref": "#/components/schemas/Keccak"
-            },
-            "storageProof": {
-              "$ref": "#/components/schemas/StorageProof"
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          }
+          ]
         }
       }
     },
@@ -523,9 +581,16 @@
         }
       ],
       "result": {
-        "name": "integer",
+        "name": "getBalanceResult",
         "schema": {
-          "$ref": "#/components/schemas/Integer"
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Integer"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
         }
       }
     },
@@ -668,10 +733,17 @@
         }
       ],
       "result": {
-        "name": "uncleCount",
+        "name": "uncleCountResult",
+        "description": "The Number of total uncles in the given block",
         "schema": {
-          "description": "The Number of total uncles in the given block",
-          "$ref": "#/components/schemas/Integer"
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Integer"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
         }
       }
     },
@@ -684,10 +756,17 @@
         }
       ],
       "result": {
-        "name": "uncleCount",
+        "name": "uncleCountResult",
         "schema": {
-          "description": "The Number of total uncles in the given block",
-          "$ref": "#/components/schemas/Integer"
+          "oneOf": [
+            {
+              "description": "The Number of total uncles in the given block",
+              "$ref": "#/components/schemas/Integer"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
         }
       }
     },
@@ -1297,8 +1376,8 @@
       "result": {
         "name": "hashesPerSecond",
         "schema": {
-          "description": "Integer of the number of hashes per second",
-          "$ref": "#/components/schemas/Integer"
+          "type": "integer",
+          "description": "Integer of the number of hashes per second"
         }
       }
     },
@@ -1533,23 +1612,35 @@
       "result": {
         "name": "rawWallet",
         "schema": {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "status": {
-              "type": "string"
-            },
-            "accounts": {
-              "description": "An array of addresses owned by the client",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/Address"
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "accounts": {
+                "description": "An array of addresses owned by the client",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "address": {
+                      "$ref": "#/components/schemas/Address"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              },
+              "failure": {
+                "type": "string"
               }
-            },
-            "failure": {
-              "type": "string"
             }
           }
         }
@@ -1907,8 +1998,7 @@
             "nonce": {
               "description": "nonce",
               "schema": {
-                "type": "integer",
-                "format": "int64"
+                "type": "integer"
               }
             },
             "tx": {
@@ -2106,6 +2196,7 @@
       },
       "Uncle": {
         "type": "object",
+        "description": "Orphaned blocks that can be included in the chain but at a lower block reward. NOTE: An uncle doesn’t contain individual transactions.",
         "properties": {
           "number": {
             "description": "The block number or null when its the pending block",
@@ -2388,7 +2479,7 @@
       },
       "Nonce": {
         "description": "A number only to be used once",
-        "pattern": "^0x[a-fA-F\\d]{16}$",
+        "pattern": "^0x([a-fA-F0-9]?)+$",
         "type": "string"
       },
       "Null": {
@@ -2397,7 +2488,7 @@
       },
       "Integer": {
         "type": "string",
-        "pattern": "^0x[a-fA-F\\d]+$",
+        "pattern": "^0x([a-fA-F0-9]?)+$",
         "description": "Hex representation of the integer"
       },
       "Address": {
@@ -2407,20 +2498,37 @@
       "Position": {
         "type": "string",
         "description": "Hex representation of the storage slot where the variable exists",
-        "pattern": "^0x[a-fA-F\\d]+$"
+        "pattern": "^0x([a-fA-F0-9]?)+$"
       },
       "DataWord": {
         "type": "string",
         "description": "Hex representation of a 256 bit unit of data",
-        "pattern": "^0x[a-fA-F\\d]{64}$"
+        "pattern": "^0x([a-fA-F\\d]{64})?$"
       },
       "Bytes": {
         "type": "string",
         "description": "Hex representation of a variable length byte array",
-        "pattern": "0x^([A-Fa-f0-9]{2}){8,9}$"
+        "pattern": "^0x([a-fA-F0-9]?)+$"
       }
     },
     "contentDescriptors": {
+      "Block": {
+        "name": "block",
+        "summary": "A block",
+        "description": "A block object",
+        "schema": {
+          "$ref": "#/components/schemas/Block"
+        }
+      },
+      "Null": {
+        "name": "Null",
+        "description": "JSON Null value",
+        "summary": "Null value",
+        "schema": {
+          "type": "null",
+          "description": "Null value"
+        }
+      },
       "Signature": {
         "name": "signature",
         "summary": "The signature.",
