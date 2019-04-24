@@ -171,7 +171,26 @@
             "$ref": "#/components/contentDescriptors/Null"
           }
         ]
-      }
+      },
+      "examples": [
+        {
+          "name": "nullExample",
+          "params": [
+            {
+              "name": "blockHashExample",
+              "value": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+            },
+            {
+              "name": "indexExample",
+              "value": "0x0"
+            }
+          ],
+          "result": {
+            "name": "nullResultExample",
+            "value": null
+          }
+        }
+      ]
     },
     {
       "name": "eth_getTransactionByBlockNumberAndIndex",
@@ -285,7 +304,26 @@
             "$ref": "#/components/contentDescriptors/Null"
           }
         ]
-      }
+      },
+      "examples": [
+        {
+          "name": "nullResultExample",
+          "params": [
+            {
+              "name": "uncleBlockNumberExample",
+              "value": "0x0"
+            },
+            {
+              "name": "uncleBlockNumberIndexExample",
+              "value": "0x0"
+            }
+          ],
+          "result":{
+            "name": "nullResultExample",
+            "value": null
+          }
+        }
+      ]
     },
     {
       "name": "eth_newFilter",
@@ -2760,13 +2798,6 @@
         "schema": {
           "$ref": "#/components/schemas/TransactionHash"
         }
-      }
-    },
-    "examples": {
-      "GenesisBlockInteger": {
-        "name": "genesisBlock",
-        "description": "genesis block number as integer",
-        "value": 0
       }
     }
   }
