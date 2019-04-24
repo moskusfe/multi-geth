@@ -1485,7 +1485,8 @@
           "name": "extraData",
           "description": ". By convention this is interpreted as a unicode string, so you can set your short vanity tag.",
           "schema": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 64
           }
         }
       ],
@@ -2568,7 +2569,7 @@
       },
       "Nonce": {
         "description": "A number only to be used once",
-        "pattern": "^0x([a-fA-F0-9]?)+$",
+        "pattern": "^0x[a-fA-F0-9]+$",
         "type": "string"
       },
       "Null": {
@@ -2577,7 +2578,7 @@
       },
       "Integer": {
         "type": "string",
-        "pattern": "^0x([a-fA-F0-9]?)+$",
+        "pattern": "^0x[a-fA-F0-9]+$",
         "description": "Hex representation of the integer"
       },
       "Address": {
@@ -2663,8 +2664,9 @@
               "$ref": "#/components/schemas/Address"
             },
             "gas": {
-              "description": "The gas limit provided by the sender in Wei. default 90000",
-              "$ref": "#/components/schemas/Integer"
+              "type": "string",
+              "pattern": "^0x[a-fA-F\\d]+$",
+              "description": "The gas limit provided by the sender in Wei. default 90000"
             },
             "gasPrice": {
               "description": "The gas price willing to be paid by the sender in Wei",
