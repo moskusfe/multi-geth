@@ -80,5 +80,5 @@ package rpc
 const openRPCSchema = %s
 %s
 %s
-// `, "`", backtickEscape(string(bs)), "`")
+`, "`", backtickEscape(string(bs)), "`")
 }
