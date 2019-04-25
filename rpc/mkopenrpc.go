@@ -26,23 +26,47 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func encodeOpenRPCSchema(data []byte) string {
+const ansii = false
+
+// backtickEscape escape backticks in a string literal
+func backtickEscape(s string) string {
 
 	// HAVE: \"description\": \"If `true` it returns
 	// WANT: \"description\": \"If ` + "`" + `'true` it returns
 
 	btickS := "`"
-	dataS := strconv.QuoteToASCII(string(data))
 	bescS := fmt.Sprintf(`%s + "%s" + %s`, btickS, btickS, btickS)
-	dataS = strings.Replace(dataS, btickS, bescS, -1)
-	return dataS
+	s = strings.Replace(s, btickS, bescS, -1)
+	return s
+}
+
+// multilineStringValue should return a string value
+// GOTCHA, maybe: string lines MAYBE MUST be shortened to not be 20k+ chars long...
+func multilineStringValue(data []string, ansiiQuoted bool) string {
+	if len(data) == 0 {
+		panic("no lines")
+	}
+
+	// NOTE: the string MUST LITERALLY include the backticks; remember that we are writing the value of a string declaration, not a string
+	var ls string
+	for i, d := range data {
+		if ansiiQuoted {
+			d = strconv.QuoteToASCII(d)
+		}
+		if i < len(data)-1 {
+			ls += fmt.Sprintf("`%s`+\n", backtickEscape(d))
+		} else {
+			ls += fmt.Sprintf("`%s`\n", backtickEscape(d))
+		}
+	}
+	return ls
 }
 
 func main() {
@@ -51,26 +75,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	bs, err := ioutil.ReadFile(os.Args[1])
+	file, err := os.Open(os.Args[1])
 	if err != nil {
 		panic(err)
 	}
 
-	// schema := make(map[string]interface{})
-	// file, err := os.Open(os.Args[1])
-	// if err != nil {
-	// 	panic(err)
-	// }
+	defer file.Close()
 
-	// err = json.NewDecoder(file).Decode(schema)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
 
-	// data, err := rlp.EncodeToBytes(schema)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
 
 	fmt.Printf(`// Copyright 2019 The go-ethereum Authors
 // This file is part of the go-ethereum library.
@@ -96,7 +114,6 @@ package rpc
 
 // nolint: misspell
 
-const openRPCSchema = %s%s%s
-
-`, "`", encodeOpenRPCSchema(bs), "`")
+const openRPCSchema = %s
+`, multilineStringValue(lines, ansii))
 }
