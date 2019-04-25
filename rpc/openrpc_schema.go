@@ -20,8 +20,6 @@ package rpc
 // Their content is a JSON string.
 // Use mkopenrpc.go to create/update them.
 
-// nolint: misspell
-
 const openRPCSchema = `{`+
 `  "openrpc": "1.0.0",`+
 `  "info": {`+
