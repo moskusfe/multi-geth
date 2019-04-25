@@ -24,7 +24,6 @@ import (
 
 	mapset "github.com/deckarep/golang-set"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/gobuffalo/packr/v2"
 )
 
 const MetadataApi = "rpc"
@@ -49,9 +48,6 @@ type Server struct {
 	run      int32
 	codecs   mapset.Set
 }
-
-// set up a new box by giving it a (relative) path to a folder on disk:
-var staticRes = packr.New("static resources", "./static")
 
 // NewServer creates a new server instance with no registered handlers.
 func NewServer() *Server {
