@@ -26,14 +26,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
-	"strconv"
 	"strings"
 )
-
-const ansii = false
 
 // backtickEscape escape backticks in a string literal
 func backtickEscape(s string) string {
@@ -47,47 +44,15 @@ func backtickEscape(s string) string {
 	return s
 }
 
-// multilineStringValue should return a string value
-// GOTCHA, maybe: string lines MAYBE MUST be shortened to not be 20k+ chars long...
-func multilineStringValue(data []string, ansiiQuoted bool) string {
-	if len(data) == 0 {
-		panic("no lines")
-	}
-
-	// NOTE: the string MUST LITERALLY include the backticks; remember that we are writing the value of a string declaration, not a string
-	var ls string
-	for i, d := range data {
-		if ansiiQuoted {
-			d = strconv.QuoteToASCII(d)
-		}
-		if i < len(data)-1 {
-			ls += fmt.Sprintf("`%s`+\n", backtickEscape(d))
-		} else {
-			ls += fmt.Sprintf("`%s`\n", backtickEscape(d))
-		}
-	}
-	return ls
-}
-
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Fprintln(os.Stderr, "Usage: mkopenrpc openrpc.json")
 		os.Exit(1)
 	}
 
-	file, err := os.Open(os.Args[1])
+	bs, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
 		panic(err)
-	}
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-
-	var lines []string
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
 	}
 
 	fmt.Printf(`// Copyright 2019 The go-ethereum Authors
@@ -113,5 +78,7 @@ package rpc
 // Use mkopenrpc.go to create/update them.
 
 const openRPCSchema = %s
-`, multilineStringValue(lines, ansii))
+%s
+%s
+// `, "`", backtickEscape(string(bs)), "`")
 }
