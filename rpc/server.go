@@ -152,15 +152,8 @@ func (s *RPCService) Modules() map[string]string {
 }
 
 func (s *RPCService) Discover() map[string]interface{} {
-
-	// Get the string representation of a file, or an error if it doesn't exist:
-	ss, err := staticRes.Find("openrpc.json")
-	if err != nil {
-		log.Crit("read OpenRPC file error", "error", err)
-	}
-
 	var m map[string]interface{}
-	err = json.Unmarshal(ss, &m)
+	err := json.Unmarshal([]byte(openRPCSchema), &m)
 	if err != nil {
 		log.Crit("openrpc json", "unmarshall error", err)
 	}
