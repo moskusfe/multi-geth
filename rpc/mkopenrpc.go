@@ -16,6 +16,13 @@
 
 // +build none
 
+/*
+
+  The mkopenrpc tool creates the OpenRPC JSON schema constant in openrpc_schema.go
+  It outputs a const declaration that contains a string.
+
+*/
+
 package main
 
 import (
