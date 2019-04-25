@@ -151,7 +151,7 @@ func (s *RPCService) Discover() map[string]interface{} {
 	var m map[string]interface{}
 	err := json.Unmarshal([]byte(openRPCSchema), &m)
 	if err != nil {
-		log.Crit("openrpc json", "unmarshall error", err)
+		log.Crit("openrpc json umarshal", "error", err)
 	}
 
 	return m
