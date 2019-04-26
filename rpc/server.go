@@ -22,6 +22,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
+	"strings"
 	"sync/atomic"
 
 	mapset "github.com/deckarep/golang-set"
@@ -227,17 +229,18 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 	// Feedback on match/nomatch server methods vs. openrpc schema methods.
 	for mod, paths := range serverMethodsAvailable {
 		for _, p := range paths {
-			name := fmt.Sprintf("%s%s%s", mod, serviceMethodSeparators[0], p) // FIXME
+			nameRPat := fmt.Sprintf(`%s[%s]{1}%s`, mod, strings.Join(serviceMethodSeparators, ""), p)
+			nameR := regexp.MustCompile(nameRPat)
 
-			var existsInSchema bool
+			var foundName string
 			for _, m := range schema.Methods {
 				sname := m["name"].(string)
-				if name == sname {
-					existsInSchema = true
+				if nameR.MatchString(sname) {
+					foundName = sname
 					break
 				}
 			}
-			if !existsInSchema {
+			if foundName == "" {
 				s.server.services.mu.Lock()
 				cb, sane := s.server.services.services[mod].callbacks[p]
 				if !sane {
@@ -245,10 +248,10 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 				}
 
 				s.server.services.mu.Unlock()
-				log.Warn("no openrpc method", "method", name, "argTypes", cb.argTypes, "errPos", cb.errPos, "subscription?", cb.isSubscribe)
+				log.Warn("no openrpc method", "method", fmt.Sprintf("%s %s", mod, p), "argTypes", cb.argTypes, "errPos", cb.errPos, "subscription?", cb.isSubscribe)
 
 			} else {
-				log.Info("ok openrpc method", "method", name)
+				log.Info("ok openrpc method", "method", foundName)
 			}
 		}
 	}
