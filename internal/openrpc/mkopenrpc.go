@@ -71,13 +71,15 @@ func main() {
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package rpc
+package openrpc
 
 // File contains auto-generated constant(s) containing schema data for OpenRPC.
 // Their content is a JSON string.
 // Use mkopenrpc.go to create/update them.
 
-const openRPCSchema = %s
+// OpenRPCSchema defines the default full suite of possibly available go-ethereum RPC
+// methods.
+const OpenRPCSchema = %s
 %s
 %s
 `, "`", backtickEscape(string(bs)), "`")

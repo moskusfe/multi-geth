@@ -14,13 +14,15 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package rpc
+package openrpc
 
 // File contains auto-generated constant(s) containing schema data for OpenRPC.
 // Their content is a JSON string.
 // Use mkopenrpc.go to create/update them.
 
-const openRPCSchema = `
+// OpenRPCSchema defines the default full suite of possibly available go-ethereum RPC
+// methods.
+const OpenRPCSchema = `
 {
   "openrpc": "1.0.0",
   "info": {
@@ -59,14 +61,17 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Block"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "name": "getBlockByHashResult",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Block"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
+        }
       }
     },
     {
@@ -86,14 +91,17 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Block"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "name": "getBlockByNumberResult",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Block"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
+        }
       }
     },
     {
@@ -137,17 +145,17 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "nonce",
-            "schema": {
+        "name": "transactionCount",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Nonce"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       }
     },
     {
@@ -159,14 +167,7 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Transaction"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "$ref": "#/components/contentDescriptors/TransactionResult"
       }
     },
     {
@@ -186,14 +187,7 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Transaction"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "$ref": "#/components/contentDescriptors/TransactionResult"
       },
       "examples": [
         {
@@ -232,14 +226,7 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Transaction"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "$ref": "#/components/contentDescriptors/TransactionResult"
       }
     },
     {
@@ -251,17 +238,18 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "receipt",
-            "schema": {
+        "name": "transactionReceiptResult",
+        "description": "returns either a receipt or null",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Receipt"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       }
     },
     {
@@ -316,17 +304,18 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "uncle",
-            "schema": {
+        "name": "uncleResult",
+        "description": "returns an uncle or null",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Uncle"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       },
       "examples": [
         {
@@ -341,7 +330,7 @@ const openRPCSchema = `
               "value": "0x0"
             }
           ],
-          "result":{
+          "result": {
             "name": "nullResultExample",
             "value": null
           }
@@ -413,7 +402,7 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "name": "",
+        "name": "logResult",
         "schema": {
           "type": "array",
           "items": {
@@ -688,7 +677,7 @@ const openRPCSchema = `
       "params": [
         {
           "name": "address",
-          "description": "The address of the account who's signature to use.",
+          "description": "The address of the account whos signature to use.",
           "schema": {
             "$ref": "#/components/schemas/Address"
           }
@@ -789,18 +778,18 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "blockTransactionCountByHash",
-            "schema": {
-              "description": "The Number of total transactions in the given block",
+        "name": "blockTransactionCountByHash",
+        "description": "The Number of total transactions in the given block",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Integer"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       }
     },
     {
@@ -812,18 +801,18 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "blocktransactionCountByNumber",
-            "schema": {
-              "description": "The Number of total transactions in the given block",
+        "name": "blockTransactionCountByHash",
+        "description": "The Number of total transactions in the given block",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Integer"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       }
     },
     {
@@ -1000,7 +989,10 @@ const openRPCSchema = `
       "result": {
         "name": "result",
         "description": "result of chain exporting",
-        "schema": {}
+        "schema": {
+          "description": "` + "`" + `true` + "`" + ` if exported or ` + "`" + `false` + "`" + ` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -1018,7 +1010,10 @@ const openRPCSchema = `
       "result": {
         "name": "result",
         "description": "result of chain import",
-        "schema": {}
+        "schema": {
+          "description": "` + "`" + `true` + "`" + ` if imported or ` + "`" + `false` + "`" + ` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -1255,7 +1250,17 @@ const openRPCSchema = `
       ],
       "result": {
         "name": "head is set to the new block",
-        "schema": {}
+        "description": "` + "`" + `true` + "`" + ` if head set or ` + "`" + `null` + "`" + ` if failed",
+        "schema": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
+        }
       }
     },
     {
@@ -1291,7 +1296,10 @@ const openRPCSchema = `
       "result": {
         "name": "result",
         "description": "bad block traced to file",
-        "schema": {}
+        "schema": {
+          "description": "` + "`" + `true` + "`" + ` if traced to file or ` + "`" + `false` + "`" + ` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -1308,7 +1316,10 @@ const openRPCSchema = `
       ],
       "result": {
         "name": "block traced to file",
-        "schema": {}
+        "schema": {
+          "description": "` + "`" + `true` + "`" + ` if traced to file or ` + "`" + `false` + "`" + ` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -1446,7 +1457,7 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "name": "",
+        "name": "traceBlockResult",
         "schema": {
           "description": "",
           "$ref": "#/components/schemas/Bytes"
@@ -1912,7 +1923,7 @@ const openRPCSchema = `
         }
       ],
       "result": {
-        "name": "unlockAccountSuggess",
+        "name": "unlockAccountSuccess",
         "description": "returns true if unlock success",
         "schema": {
           "type": "boolean"
@@ -2038,15 +2049,6 @@ const openRPCSchema = `
         "items": {
           "$ref": "#/components/schemas/ProofNode"
         }
-      },
-      "StorageEntry": {
-        "description": ""
-      },
-      "StorageMap": {
-        "description": ""
-      },
-      "StorageRange": {
-        "description": ""
       },
       "PowHash": {
         "description": "Current block header PoW hash.",
@@ -2180,6 +2182,40 @@ const openRPCSchema = `
           "latest",
           "pending"
         ]
+      },
+      "StorageRange": {
+        "type": "object",
+        "description": "allows downloading storage in chunks. debug_storageRangeAt takes parameters blockHash, txIndex, account, startKey, limit. The startKey applies to the hashed key. The returned storage values contain the preimage if available. The returned object also contains the nextKey field, which will be non-null if there are more keys after the range that was returned. ",
+        "properties": {
+          "storage": {
+            "patternProperties": {
+              "^0x[a-fA-F\\d]{40}$": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F\\d]+$"
+                  },
+                  "value": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F\\d]+$"
+                  }
+                }
+              }
+            }
+          },
+          "nextKey": {
+            "oneOf": [
+              {
+                "type": "string",
+                "pattern": "^0x[a-fA-F\\d]+$"
+              },
+              {
+                "$ref": "#/components/schemas/Null"
+              }
+            ]
+          }
+        }
       },
       "Receipt": {
         "type": "object",
@@ -2502,6 +2538,11 @@ const openRPCSchema = `
       },
       "Transaction": {
         "type": "object",
+        "required": [
+          "gas",
+          "gasPrice",
+          "nonce"
+        ],
         "properties": {
           "blockHash": {
             "description": "Hash of the block where this transaction was in. null when its pending",
@@ -2671,43 +2712,21 @@ const openRPCSchema = `
         "required": true,
         "name": "transaction",
         "schema": {
-          "type": "object",
-          "required": [
-            "gas",
-            "gasPrice",
-            "nonce"
-          ],
-          "properties": {
-            "from": {
-              "description": "Address of the sender",
-              "$ref": "#/components/schemas/Address"
+          "$ref": "#/components/schemas/Transaction"
+        }
+      },
+      "TransactionResult": {
+        "name": "transactionResult",
+        "description": "Returns a transaction or null",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Transaction"
             },
-            "to": {
-              "description": "address of the receiver. optional if it's a contract creation transaction",
-              "$ref": "#/components/schemas/Address"
-            },
-            "gas": {
-              "type": "string",
-              "pattern": "^0x[a-fA-F\\d]+$",
-              "description": "The gas limit provided by the sender in Wei. default 90000"
-            },
-            "gasPrice": {
-              "description": "The gas price willing to be paid by the sender in Wei",
-              "$ref": "#/components/schemas/Integer"
-            },
-            "value": {
-              "description": "Value of Ether being transferred in Wei",
-              "$ref": "#/components/schemas/Keccak"
-            },
-            "data": {
-              "type": "string",
-              "description": "The compiled code of a contract OR the hash of the invoked method signature and encoded parameters. For details see Ethereum Contract ABI."
-            },
-            "nonce": {
-              "description": "The total number of prior transactions made by the sender.",
-              "$ref": "#/components/schemas/Nonce"
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          }
+          ]
         }
       },
       "Message": {
@@ -2828,4 +2847,3 @@ const openRPCSchema = `
   }
 }
 `
-// 

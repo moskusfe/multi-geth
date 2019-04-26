@@ -37,9 +37,11 @@ import (
 	"github.com/ethereum/go-ethereum/eth/downloader"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/internal/debug"
+	"github.com/ethereum/go-ethereum/internal/openrpc"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/metrics"
 	"github.com/ethereum/go-ethereum/node"
+	"github.com/ethereum/go-ethereum/rpc"
 	cli "gopkg.in/urfave/cli.v1"
 )
 
@@ -268,6 +270,8 @@ func init() {
 		console.Stdin.Close() // Resets terminal mode.
 		return nil
 	}
+
+	rpc.DefaultOpenRPCSchemaRaw = openrpc.OpenRPCSchema
 }
 
 func main() {

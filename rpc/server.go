@@ -19,6 +19,7 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"sync/atomic"
 
@@ -27,6 +28,11 @@ import (
 )
 
 const MetadataApi = "rpc"
+
+// DefaultOpenRPCSchemaRaw can be used to establish a default (package-wide) OpenRPC schema from raw JSON.
+// Methods will be cross referenced with actual registed method names in order to serve
+// only actually-enabled methods, enabling user and on-the-fly server endpoint availability configuration.
+var DefaultOpenRPCSchemaRaw string
 
 // CodecOption specifies which type of messages a codec supports.
 //
@@ -43,18 +49,24 @@ const (
 
 // Server is an RPC server.
 type Server struct {
-	services serviceRegistry
-	idgen    func() ID
-	run      int32
-	codecs   mapset.Set
+	services         serviceRegistry
+	idgen            func() ID
+	run              int32
+	codecs           mapset.Set
+	OpenRPCSchemaRaw string
 }
 
 // NewServer creates a new server instance with no registered handlers.
 func NewServer() *Server {
-	server := &Server{idgen: randomIDGenerator(), codecs: mapset.NewSet(), run: 1}
+	server := &Server{
+		idgen:            randomIDGenerator(),
+		codecs:           mapset.NewSet(),
+		run:              1,
+		OpenRPCSchemaRaw: DefaultOpenRPCSchemaRaw,
+	}
 	// Register the default service providing meta information about the RPC service such
 	// as the services and methods it offers.
-	rpcService := &RPCService{server}
+	rpcService := &RPCService{server: server}
 	server.RegisterName(MetadataApi, rpcService)
 	return server
 }
@@ -65,6 +77,10 @@ func NewServer() *Server {
 // service collection this server provides to clients.
 func (s *Server) RegisterName(name string, receiver interface{}) error {
 	return s.services.registerName(name, receiver)
+}
+
+func (s *Server) SetOpenRPCSchemaRaw(schemaJSON string) {
+	s.OpenRPCSchemaRaw = schemaJSON
 }
 
 // ServeCodec reads incoming requests from codec, calls the appropriate callback and writes
@@ -129,6 +145,8 @@ func (s *Server) Stop() {
 	}
 }
 
+var errOpenRPCDiscoverNotImplemented = errors.New("openrpc discover method has not been implemented")
+
 // RPCService gives meta information about the server.
 // e.g. gives information about the loaded modules.
 type RPCService struct {
@@ -147,12 +165,62 @@ func (s *RPCService) Modules() map[string]string {
 	return modules
 }
 
-func (s *RPCService) Discover() map[string]interface{} {
-	var m map[string]interface{}
-	err := json.Unmarshal([]byte(openRPCSchema), &m)
+func (s *RPCService) methods() map[string][]string {
+	s.server.services.mu.Lock()
+	defer s.server.services.mu.Unlock()
+
+	methods := make(map[string][]string)
+	for name, ser := range s.server.services.services {
+		for s := range ser.callbacks {
+			_, ok := methods[name]
+			if !ok {
+				methods[name] = []string{s}
+			} else {
+				methods[name] = append(methods[name], s)
+			}
+		}
+	}
+	return methods
+}
+
+// Discover returns a configured schema that is audited for actual server availability.
+// Only methods that the server makes available are included in the 'methods' array of
+// the discover schema. Components are not audited.
+func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
+	if s.server.OpenRPCSchemaRaw == "" {
+		return nil, errOpenRPCDiscoverNotImplemented
+	}
+	schema = &OpenRPCDiscoverSchemaT{}
+	err = json.Unmarshal([]byte(s.server.OpenRPCSchemaRaw), schema)
 	if err != nil {
 		log.Crit("openrpc json umarshal", "error", err)
 	}
 
-	return m
+	// audit schema methods for server availability
+	schemaMethodsAvailable := []map[string]interface{}{}
+	serverMethodsAvailable := s.methods()
+	for _, m := range schema.Methods {
+		els, err := elementizeMethodName(m["name"].(string))
+		if err != nil {
+			return nil, err
+		}
+		elModule, elPath := els[0], els[1]
+		paths, ok := serverMethodsAvailable[elModule]
+		if ok {
+			// the module exists, does the path exist?
+			var matched bool
+			for _, m := range paths {
+				if m == elPath {
+					matched = true
+					break
+				}
+			}
+			ok = matched
+		}
+		if ok {
+			schemaMethodsAvailable = append(schemaMethodsAvailable, m)
+		}
+	}
+	schema.Methods = schemaMethodsAvailable
+	return
 }
