@@ -977,7 +977,10 @@
       "result": {
         "name": "result",
         "description": "result of chain exporting",
-        "schema": {}
+        "schema": {
+          "description": "`true` if exported or `false` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -995,7 +998,10 @@
       "result": {
         "name": "result",
         "description": "result of chain import",
-        "schema": {}
+        "schema": {
+          "description": "`true` if imported or `false` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -1232,7 +1238,10 @@
       ],
       "result": {
         "name": "head is set to the new block",
-        "schema": {}
+        "schema": {
+          "description": "`true` if head set or `false` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -1268,7 +1277,10 @@
       "result": {
         "name": "result",
         "description": "bad block traced to file",
-        "schema": {}
+        "schema": {
+          "description": "`true` if traced to file or `false` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -1285,7 +1297,10 @@
       ],
       "result": {
         "name": "block traced to file",
-        "schema": {}
+        "schema": {
+          "description": "`true` if traced to file or `false` failed",
+          "type": "boolean"
+        }
       }
     },
     {
@@ -1889,7 +1904,7 @@
         }
       ],
       "result": {
-        "name": "unlockAccountSuggess",
+        "name": "unlockAccountSuccess",
         "description": "returns true if unlock success",
         "schema": {
           "type": "boolean"
