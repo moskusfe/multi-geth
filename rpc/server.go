@@ -248,7 +248,7 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 				}
 
 				s.server.services.mu.Unlock()
-				log.Warn("no openrpc method", "method", fmt.Sprintf("%s %s", mod, p), "argTypes", cb.argTypes, "errPos", cb.errPos, "subscription?", cb.isSubscribe)
+				log.Warn("no openrpc method", "method", fmt.Sprintf("%s_%s", mod, p), "argTypes", cb.argTypes, "errPos", cb.errPos, "subscription?", cb.isSubscribe)
 
 			} else {
 				log.Info("ok openrpc method", "method", foundName)
