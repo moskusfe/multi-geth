@@ -770,6 +770,46 @@ const OpenRPCSchema = `
       }
     },
     {
+      "name": "eth_getRawTransactionByHash",
+      "summary": "Returns raw transaction data of a transaction with the given hash.",
+      "params": [
+        {
+          "$ref": "#/components/schemas/Keccak"
+        }
+      ],
+      "result": {
+        "name": "rawTransactionByHash",
+        "description": "The raw transaction data",
+        "schema": {
+          "$ref": "#/components/schemas/Bytes"
+        }
+      }
+    },
+    {
+      "name": "eth_getRawTransactionByBlockHashAndIndex",
+      "summary": "Returns raw transaction data of a transaction with the given hash.",
+      "params": [
+        {
+          "$ref": "#/components/schemas/BlockHash"
+        },
+        {
+          "name": "index",
+          "description": "The ordering in which a transaction is mined within its block.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Integer"
+          }
+        }
+      ],
+      "result": {
+        "name": "rawTransaction",
+        "description": "The raw transaction data",
+        "schema": {
+          "$ref": "#/components/schemas/Bytes"
+        }
+      }
+    },
+    {
       "name": "eth_getBlockTransactionCountByHash",
       "summary": "Returns the number of transactions in a block from a block matching the given block hash.",
       "params": [
