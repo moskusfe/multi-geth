@@ -36,14 +36,17 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Block"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "name": "getBlockByHashResult",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Block"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
+        }
       }
     },
     {
@@ -63,14 +66,17 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Block"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "name": "getBlockByNumberResult",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Block"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
+        }
       }
     },
     {
@@ -114,17 +120,17 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "nonce",
-            "schema": {
+        "name": "transactionCount",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Nonce"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       }
     },
     {
@@ -136,14 +142,7 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Transaction"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "$ref": "#/components/contentDescriptors/TransactionResult"
       }
     },
     {
@@ -163,14 +162,7 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Transaction"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "$ref": "#/components/contentDescriptors/TransactionResult"
       },
       "examples": [
         {
@@ -209,14 +201,7 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "$ref": "#/components/contentDescriptors/Transaction"
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+        "$ref": "#/components/contentDescriptors/TransactionResult"
       }
     },
     {
@@ -228,17 +213,18 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "receipt",
-            "schema": {
+        "name": "transactionReceiptResult",
+        "description": "returns either a receipt or null",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Receipt"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       }
     },
     {
@@ -293,17 +279,18 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "uncle",
-            "schema": {
+        "name": "uncleResult",
+        "description": "returns an uncle or null",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Uncle"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       },
       "examples": [
         {
@@ -318,7 +305,7 @@
               "value": "0x0"
             }
           ],
-          "result":{
+          "result": {
             "name": "nullResultExample",
             "value": null
           }
@@ -665,7 +652,7 @@
       "params": [
         {
           "name": "address",
-          "description": "The address of the account who's signature to use.",
+          "description": "The address of the account whos signature to use.",
           "schema": {
             "$ref": "#/components/schemas/Address"
           }
@@ -766,18 +753,18 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "blockTransactionCountByHash",
-            "schema": {
-              "description": "The Number of total transactions in the given block",
+        "name": "blockTransactionCountByHash",
+        "description": "The Number of total transactions in the given block",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Integer"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       }
     },
     {
@@ -789,18 +776,18 @@
         }
       ],
       "result": {
-        "oneOf": [
-          {
-            "name": "blocktransactionCountByNumber",
-            "schema": {
-              "description": "The Number of total transactions in the given block",
+        "name": "blockTransactionCountByHash",
+        "description": "The Number of total transactions in the given block",
+        "schema": {
+          "oneOf": [
+            {
               "$ref": "#/components/schemas/Integer"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          },
-          {
-            "$ref": "#/components/contentDescriptors/Null"
-          }
-        ]
+          ]
+        }
       }
     },
     {
@@ -1238,9 +1225,16 @@
       ],
       "result": {
         "name": "head is set to the new block",
+        "description": "`true` if head set or `null` if failed",
         "schema": {
-          "description": "`true` if head set or `false` failed",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/components/schemas/Null"
+            }
+          ]
         }
       }
     },
@@ -2031,15 +2025,6 @@
           "$ref": "#/components/schemas/ProofNode"
         }
       },
-      "StorageEntry": {
-        "description": ""
-      },
-      "StorageMap": {
-        "description": ""
-      },
-      "StorageRange": {
-        "description": ""
-      },
       "PowHash": {
         "description": "Current block header PoW hash.",
         "$ref": "#/components/schemas/DataWord"
@@ -2172,6 +2157,40 @@
           "latest",
           "pending"
         ]
+      },
+      "StorageRange": {
+        "type": "object",
+        "description": "allows downloading storage in chunks. debug_storageRangeAt takes parameters blockHash, txIndex, account, startKey, limit. The startKey applies to the hashed key. The returned storage values contain the preimage if available. The returned object also contains the nextKey field, which will be non-null if there are more keys after the range that was returned. ",
+        "properties": {
+          "storage": {
+            "patternProperties": {
+              "^0x[a-fA-F\\d]{40}$": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F\\d]+$"
+                  },
+                  "value": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F\\d]+$"
+                  }
+                }
+              }
+            }
+          },
+          "nextKey": {
+            "oneOf": [
+              {
+                "type": "string",
+                "pattern": "^0x[a-fA-F\\d]+$"
+              },
+              {
+                "$ref": "#/components/schemas/Null"
+              }
+            ]
+          }
+        }
       },
       "Receipt": {
         "type": "object",
@@ -2494,6 +2513,11 @@
       },
       "Transaction": {
         "type": "object",
+        "required": [
+          "gas",
+          "gasPrice",
+          "nonce"
+        ],
         "properties": {
           "blockHash": {
             "description": "Hash of the block where this transaction was in. null when its pending",
@@ -2663,43 +2687,21 @@
         "required": true,
         "name": "transaction",
         "schema": {
-          "type": "object",
-          "required": [
-            "gas",
-            "gasPrice",
-            "nonce"
-          ],
-          "properties": {
-            "from": {
-              "description": "Address of the sender",
-              "$ref": "#/components/schemas/Address"
+          "$ref": "#/components/schemas/Transaction"
+        }
+      },
+      "TransactionResult": {
+        "name": "transactionResult",
+        "description": "Returns a transaction or null",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Transaction"
             },
-            "to": {
-              "description": "address of the receiver. optional if it's a contract creation transaction",
-              "$ref": "#/components/schemas/Address"
-            },
-            "gas": {
-              "type": "string",
-              "pattern": "^0x[a-fA-F\\d]+$",
-              "description": "The gas limit provided by the sender in Wei. default 90000"
-            },
-            "gasPrice": {
-              "description": "The gas price willing to be paid by the sender in Wei",
-              "$ref": "#/components/schemas/Integer"
-            },
-            "value": {
-              "description": "Value of Ether being transferred in Wei",
-              "$ref": "#/components/schemas/Keccak"
-            },
-            "data": {
-              "type": "string",
-              "description": "The compiled code of a contract OR the hash of the invoked method signature and encoded parameters. For details see Ethereum Contract ABI."
-            },
-            "nonce": {
-              "description": "The total number of prior transactions made by the sender.",
-              "$ref": "#/components/schemas/Nonce"
+            {
+              "$ref": "#/components/schemas/Null"
             }
-          }
+          ]
         }
       },
       "Message": {
