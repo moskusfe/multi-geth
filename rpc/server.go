@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"sync/atomic"
 
@@ -31,7 +32,7 @@ const MetadataApi = "rpc"
 
 // DefaultOpenRPCSchemaRaw can be used to establish a default (package-wide) OpenRPC schema from raw JSON.
 // Methods will be cross referenced with actual registed method names in order to serve
-// only actually-enabled methods, enabling user and on-the-fly server endpoint availability configuration.
+// only server-enabled methods, enabling user and on-the-fly server endpoint availability configuration.
 var DefaultOpenRPCSchemaRaw string
 
 // CodecOption specifies which type of messages a codec supports.
@@ -221,6 +222,37 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 			schemaMethodsAvailable = append(schemaMethodsAvailable, m)
 		}
 	}
+
+	// PTAL: develop/debug only, posssibly
+	// Feedback on match/nomatch server methods vs. openrpc schema methods.
+	for mod, paths := range serverMethodsAvailable {
+		for _, p := range paths {
+			name := fmt.Sprintf("%s%s%s", mod, serviceMethodSeparators[0], p) // FIXME
+
+			var existsInSchema bool
+			for _, m := range schema.Methods {
+				sname := m["name"].(string)
+				if name == sname {
+					existsInSchema = true
+					break
+				}
+			}
+			if !existsInSchema {
+				s.server.services.mu.Lock()
+				cb, sane := s.server.services.services[mod].callbacks[p]
+				if !sane {
+					panic("impossible, by george!")
+				}
+
+				s.server.services.mu.Unlock()
+				log.Warn("no openrpc method", "method", name, "argTypes", cb.argTypes, "errPos", cb.errPos, "subscription?", cb.isSubscribe)
+
+			} else {
+				log.Info("ok openrpc method", "method", name)
+			}
+		}
+	}
+
 	schema.Methods = schemaMethodsAvailable
 	return
 }
