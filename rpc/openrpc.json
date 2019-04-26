@@ -390,7 +390,7 @@
         }
       ],
       "result": {
-        "name": "",
+        "name": "logResult",
         "schema": {
           "type": "array",
           "items": {
@@ -1423,7 +1423,7 @@
         }
       ],
       "result": {
-        "name": "",
+        "name": "traceBlockResult",
         "schema": {
           "description": "",
           "$ref": "#/components/schemas/Bytes"
