@@ -41,6 +41,16 @@ const OpenRPCSchema = `
   ],
   "methods": [
     {
+      "name": "rpc.discover",
+      "description": "Returns an OpenRPC schema as a description of this service",
+      "result": {
+        "name": "OpenRPC Schema",
+        "schema": {
+          "$ref": "https://raw.githubusercontent.com/open-rpc/meta-schema/master/schema.json"
+        }
+      }
+    },
+    {
       "name": "eth_getBlockByHash",
       "summary": "Gets a block for a given hash",
       "params": [
