@@ -36,7 +36,7 @@ var (
 	// DefaultOpenRPCSchemaRaw can be used to establish a default (package-wide) OpenRPC schema from raw JSON.
 	// Methods will be cross referenced with actual registed method names in order to serve
 	// only server-enabled methods, enabling user and on-the-fly server endpoint availability configuration.
-	DefaultOpenRPCSchemaRaw       string
+	defaultOpenRPCSchemaRaw       string
 	errOpenRPCDiscoverUnavailable = errors.New("openrpc discover data unavailable")
 )
 
@@ -68,7 +68,7 @@ func NewServer() *Server {
 		idgen:            randomIDGenerator(),
 		codecs:           mapset.NewSet(),
 		run:              1,
-		OpenRPCSchemaRaw: DefaultOpenRPCSchemaRaw,
+		openRPCSchemaRaw: defaultOpenRPCSchemaRaw,
 	}
 	// Register the default service providing meta information about the RPC service such
 	// as the services and methods it offers.
@@ -81,8 +81,8 @@ func NewServer() *Server {
 // The reason this is a function is to keep the idea open that it might be
 // desireable to audit or check the data before installation, for example
 // ensuring the string is valid JSON.
-func (s *Server) SetOpenRPCSchemaRaw(schemaJSON string) {
-	s.OpenRPCSchemaRaw = schemaJSON
+func (s *Server) SetDefaultOpenRPCSchemaRaw(schemaJSON string) {
+	s.openRPCSchemaRaw = schemaJSON
 }
 
 // RegisterName creates a service for the given receiver type under the given name. When no
