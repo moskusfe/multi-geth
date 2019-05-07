@@ -16,12 +16,9 @@
 
 package openrpc
 
-// File contains auto-generated constant(s) containing schema data for OpenRPC.
-// Their content is a JSON string.
-// Use mkopenrpc.go to create/update them.
-
 // OpenRPCSchema defines the default full suite of possibly available go-ethereum RPC
 // methods.
+// Its specification is documented at https://github.com/etclabscore/ethereum-json-rpc-specification.
 const OpenRPCSchema = `
 {
   "openrpc": "1.0.0",
