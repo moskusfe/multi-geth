@@ -212,7 +212,11 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 		log.Crit("openrpc json umarshal", "error", err)
 	}
 
-	// audit schema methods for server availability
+	// Audit documented schema methods vs. actual server availability
+	// This removes methods described in the OpenRPC JSON schema document
+	// which are not currently exposed on the server's API.
+	// This is done on the fly (as opposed to at servre init or schema setting)
+	// because it's possible that exposed APIs could be modified in proc.
 	schemaMethodsAvailable := []map[string]interface{}{}
 	serverMethodsAvailable := s.methods()
 	for _, m := range schema.Methods {
