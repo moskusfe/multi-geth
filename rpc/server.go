@@ -18,7 +18,12 @@ package rpc
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
+	"regexp"
+	"strings"
 	"sync/atomic"
 
 	mapset "github.com/deckarep/golang-set"
@@ -26,6 +31,14 @@ import (
 )
 
 const MetadataApi = "rpc"
+
+var (
+	// DefaultOpenRPCSchemaRaw can be used to establish a default (package-wide) OpenRPC schema from raw JSON.
+	// Methods will be cross referenced with actual registed method names in order to serve
+	// only server-enabled methods, enabling user and on-the-fly server endpoint availability configuration.
+	DefaultOpenRPCSchemaRaw       string
+	errOpenRPCDiscoverUnavailable = errors.New("openrpc discover data unavailable")
+)
 
 // CodecOption specifies which type of messages a codec supports.
 //
@@ -42,20 +55,34 @@ const (
 
 // Server is an RPC server.
 type Server struct {
-	services serviceRegistry
-	idgen    func() ID
-	run      int32
-	codecs   mapset.Set
+	services         serviceRegistry
+	idgen            func() ID
+	run              int32
+	codecs           mapset.Set
+	OpenRPCSchemaRaw string
 }
 
 // NewServer creates a new server instance with no registered handlers.
 func NewServer() *Server {
-	server := &Server{idgen: randomIDGenerator(), codecs: mapset.NewSet(), run: 1}
+	server := &Server{
+		idgen:            randomIDGenerator(),
+		codecs:           mapset.NewSet(),
+		run:              1,
+		OpenRPCSchemaRaw: DefaultOpenRPCSchemaRaw,
+	}
 	// Register the default service providing meta information about the RPC service such
 	// as the services and methods it offers.
-	rpcService := &RPCService{server}
+	rpcService := &RPCService{server: server}
 	server.RegisterName(MetadataApi, rpcService)
 	return server
+}
+
+// SetOpenRPCSchemaRaw sets the raw OpenRPC schema data for a server.
+// The reason this is a function is to keep the idea open that it might be
+// desireable to audit or check the data before installation, for example
+// ensuring the string is valid JSON.
+func (s *Server) SetOpenRPCSchemaRaw(schemaJSON string) {
+	s.OpenRPCSchemaRaw = schemaJSON
 }
 
 // RegisterName creates a service for the given receiver type under the given name. When no
@@ -144,4 +171,97 @@ func (s *RPCService) Modules() map[string]string {
 		modules[name] = "1.0"
 	}
 	return modules
+}
+
+func (s *RPCService) methods() map[string][]string {
+	s.server.services.mu.Lock()
+	defer s.server.services.mu.Unlock()
+
+	methods := make(map[string][]string)
+	for name, ser := range s.server.services.services {
+		for s := range ser.callbacks {
+			_, ok := methods[name]
+			if !ok {
+				methods[name] = []string{s}
+			} else {
+				methods[name] = append(methods[name], s)
+			}
+		}
+	}
+	return methods
+}
+
+// Discover returns a configured schema that is audited for actual server availability.
+// Only methods that the server makes available are included in the 'methods' array of
+// the discover schema. Components are not audited.
+func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
+	if s.server.OpenRPCSchemaRaw == "" {
+		return nil, errOpenRPCDiscoverUnavailable
+	}
+	schema = &OpenRPCDiscoverSchemaT{}
+	err = json.Unmarshal([]byte(s.server.OpenRPCSchemaRaw), schema)
+	if err != nil {
+		log.Crit("openrpc json umarshal", "error", err)
+	}
+
+	// audit schema methods for server availability
+	schemaMethodsAvailable := []map[string]interface{}{}
+	serverMethodsAvailable := s.methods()
+	for _, m := range schema.Methods {
+		els, err := elementizeMethodName(m["name"].(string))
+		if err != nil {
+			return nil, err
+		}
+		elModule, elPath := els[0], els[1]
+		paths, ok := serverMethodsAvailable[elModule]
+		if ok {
+			// the module exists, does the path exist?
+			var matched bool
+			for _, m := range paths {
+				if m == elPath {
+					matched = true
+					break
+				}
+			}
+			ok = matched
+		}
+		if ok {
+			schemaMethodsAvailable = append(schemaMethodsAvailable, m)
+		}
+	}
+
+	// PTAL: develop/debug only, posssibly
+
+	// Feedback on match/nomatch server methods vs. openrpc schema methods.
+	for mod, paths := range serverMethodsAvailable {
+		for _, p := range paths {
+			nameRPat := fmt.Sprintf(`%s[%s]{1}%s`, mod, strings.Join(serviceMethodSeparators, ""), p)
+			nameR := regexp.MustCompile(nameRPat)
+
+			var foundName string
+			for _, m := range schema.Methods {
+				sname := m["name"].(string)
+				if nameR.MatchString(sname) {
+					foundName = sname
+					break
+				}
+			}
+			if foundName == "" {
+				s.server.services.mu.Lock()
+				cb, sane := s.server.services.services[mod].callbacks[p]
+				if !sane {
+					panic("impossible, by george!")
+				}
+
+				s.server.services.mu.Unlock()
+				log.Warn("no openrpc method", "method", fmt.Sprintf("%s_%s", mod, p), "argTypes", cb.argTypes, "errPos", cb.errPos, "subscription?", cb.isSubscribe)
+
+			} else {
+				log.Info("ok openrpc method", "method", foundName)
+			}
+		}
+	}
+
+	schema.Methods = schemaMethodsAvailable
+	return
 }

@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"strings"
 	"sync"
 	"unicode"
 	"unicode/utf8"
@@ -95,9 +94,12 @@ func (r *serviceRegistry) registerName(name string, rcvr interface{}) error {
 
 // callback returns the callback corresponding to the given RPC method name.
 func (r *serviceRegistry) callback(method string) *callback {
-	elem := strings.SplitN(method, serviceMethodSeparator, 2)
+	elem, err := elementizeMethodName(method)
 	if len(elem) != 2 {
-		return nil
+		if len(elem) != 2 || err != nil {
+			return nil
+			return nil
+		}
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
