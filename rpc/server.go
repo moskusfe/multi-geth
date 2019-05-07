@@ -20,10 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
-	"regexp"
-	"strings"
 	"sync/atomic"
 
 	mapset "github.com/deckarep/golang-set"
@@ -229,39 +226,6 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 			schemaMethodsAvailable = append(schemaMethodsAvailable, m)
 		}
 	}
-
-	// PTAL: develop/debug only, posssibly
-
-	// Feedback on match/nomatch server methods vs. openrpc schema methods.
-	for mod, paths := range serverMethodsAvailable {
-		for _, p := range paths {
-			nameRPat := fmt.Sprintf(`%s[%s]{1}%s`, mod, strings.Join(serviceMethodSeparators, ""), p)
-			nameR := regexp.MustCompile(nameRPat)
-
-			var foundName string
-			for _, m := range schema.Methods {
-				sname := m["name"].(string)
-				if nameR.MatchString(sname) {
-					foundName = sname
-					break
-				}
-			}
-			if foundName == "" {
-				s.server.services.mu.Lock()
-				cb, sane := s.server.services.services[mod].callbacks[p]
-				if !sane {
-					panic("impossible, by george!")
-				}
-
-				s.server.services.mu.Unlock()
-				log.Warn("no openrpc method", "method", fmt.Sprintf("%s_%s", mod, p), "argTypes", cb.argTypes, "errPos", cb.errPos, "subscription?", cb.isSubscribe)
-
-			} else {
-				log.Info("ok openrpc method", "method", foundName)
-			}
-		}
-	}
-
 	schema.Methods = schemaMethodsAvailable
 	return
 }
