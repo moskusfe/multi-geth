@@ -351,7 +351,7 @@ OUTER:
 
 	// Free the patch and destroy machine
 	vm.Free()
-	sputnikvm.FreeDynamicPatch(patch)
+	patch.Free()
 
 	return receipt, gas, err
 }
