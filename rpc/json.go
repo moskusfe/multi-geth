@@ -44,18 +44,13 @@ var (
 	errInvalidMethodName    = errors.New("invalid method name")
 )
 
-func elementizeMethodName(methodName string) (elem [2]string) {
+func elementizeMethodName(methodName string) (module, method string, err error) {
 	for _, sep := range serviceMethodSeparators {
-		if strings.Contains(methodName, sep) {
-			s := strings.SplitN(methodName, sep, 2)
-
-			// If the split returned fewer than 2 elements this will panic
-			// with index out of range.
-			elem[0], elem[1] = s[0], s[1]
-			return
+		if s := strings.SplitN(methodName, sep, 2); len(s) == 2 {
+			return s[0], s[1], nil
 		}
 	}
-	return
+	return "", "", errInvalidMethodName
 }
 
 type subscriptionResult struct {
@@ -99,7 +94,8 @@ func (msg *jsonrpcMessage) isUnsubscribe() bool {
 }
 
 func (msg *jsonrpcMessage) namespace() string {
-	return elementizeMethodName(msg.Method)[0]
+	module, _, _ := elementizeMethodName(msg.Method)
+	return module // even if err != nil, empty string is returned so err can be ignored
 }
 
 func (msg *jsonrpcMessage) String() string {

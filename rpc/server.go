@@ -233,20 +233,21 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 	schemaMethodsAvailable := []map[string]interface{}{}
 	serverMethodsAvailable := s.methods()
 
-methodsloop:
 	for _, m := range schema.Methods {
-		els := elementizeMethodName(m["name"].(string))
-		elModule, elPath := els[0], els[1]
-		paths, ok := serverMethodsAvailable[elModule]
+		module, path, err := elementizeMethodName(m["name"].(string))
+		if err != nil {
+			return nil, err
+		}
+		paths, ok := serverMethodsAvailable[module]
 		if !ok {
-			continue methodsloop
+			continue
 		}
 
 		// the module exists, does the path exist?
 		for _, pa := range paths {
-			if pa == elPath {
+			if pa == path {
 				schemaMethodsAvailable = append(schemaMethodsAvailable, m)
-				continue methodsloop
+				break
 			}
 		}
 	}
