@@ -286,8 +286,9 @@ func init() {
 		return nil
 	}
 
-	// PTAL
-	rpc.DefaultOpenRPCSchemaRaw = openrpc.OpenRPCSchema
+	if err := rpc.SetDefaultOpenRPCSchemaRaw(openrpc.OpenRPCSchema); err != nil {
+		log.Crit("Setting OpenRPC default", "error", err)
+	}
 }
 
 func main() {

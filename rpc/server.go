@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"sync/atomic"
 
@@ -30,10 +31,10 @@ import (
 const MetadataApi = "rpc"
 
 var (
-	// DefaultOpenRPCSchemaRaw can be used to establish a default (package-wide) OpenRPC schema from raw JSON.
+	// defaultOpenRPCSchemaRaw can be used to establish a default (package-wide) OpenRPC schema from raw JSON.
 	// Methods will be cross referenced with actual registed method names in order to serve
 	// only server-enabled methods, enabling user and on-the-fly server endpoint availability configuration.
-	DefaultOpenRPCSchemaRaw string
+	defaultOpenRPCSchemaRaw string
 
 	errOpenRPCDiscoverUnavailable   = errors.New("openrpc discover data unavailable")
 	errOpenRPCDiscoverSchemaInvalid = errors.New("openrpc discover data invalid")
@@ -67,7 +68,7 @@ func NewServer() *Server {
 		idgen:            randomIDGenerator(),
 		codecs:           mapset.NewSet(),
 		run:              1,
-		OpenRPCSchemaRaw: DefaultOpenRPCSchemaRaw,
+		OpenRPCSchemaRaw: defaultOpenRPCSchemaRaw,
 	}
 	// Register the default service providing meta information about the RPC service such
 	// as the services and methods it offers.
@@ -76,17 +77,29 @@ func NewServer() *Server {
 	return server
 }
 
-// SetOpenRPCSchemaRaw sets the raw OpenRPC schema data for a server.
-// The reason this is a function is to keep the idea open that it might be
-// desireable to audit or check the data before installation, for example
-// ensuring the string is valid JSON.
-func (s *Server) SetOpenRPCSchemaRaw(schemaJSON string) error {
+func validateOpenRPCSchemaRaw(schemaJSON string) error {
 	if schemaJSON == "" {
 		return errOpenRPCDiscoverSchemaInvalid
 	}
-	// Ensure that the schema JSON value is valid.
 	var schema *OpenRPCDiscoverSchemaT
 	if err := json.Unmarshal([]byte(schemaJSON), schema); err != nil {
+		return fmt.Errorf("%v: %v", errOpenRPCDiscoverSchemaInvalid, err)
+	}
+	return nil
+}
+
+// SetDefaultOpenRPCSchemaRaw validates and sets the package-wide OpenRPC schema data.
+func SetDefaultOpenRPCSchemaRaw(schemaJSON string) error {
+	if err := validateOpenRPCSchemaRaw(schemaJSON); err != nil {
+		return err
+	}
+	defaultOpenRPCSchemaRaw = schemaJSON
+	return nil
+}
+
+// SetOpenRPCSchemaRaw validates and sets the raw OpenRPC schema data for a server.
+func (s *Server) SetOpenRPCSchemaRaw(schemaJSON string) error {
+	if err := validateOpenRPCSchemaRaw(schemaJSON); err != nil {
 		return err
 	}
 	s.OpenRPCSchemaRaw = schemaJSON
