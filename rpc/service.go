@@ -95,11 +95,8 @@ func (r *serviceRegistry) registerName(name string, rcvr interface{}) error {
 // callback returns the callback corresponding to the given RPC method name.
 func (r *serviceRegistry) callback(method string) *callback {
 	elem, err := elementizeMethodName(method)
-	if len(elem) != 2 {
-		if len(elem) != 2 || err != nil {
-			return nil
-			return nil
-		}
+	if len(elem) != 2 || err != nil {
+		return nil
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
