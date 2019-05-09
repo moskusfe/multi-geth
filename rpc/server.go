@@ -222,10 +222,7 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 
 methodsloop:
 	for _, m := range schema.Methods {
-		els, err := elementizeMethodName(m["name"].(string))
-		if err != nil {
-			return nil, err
-		}
+		els := elementizeMethodName(m["name"].(string))
 		elModule, elPath := els[0], els[1]
 		paths, ok := serverMethodsAvailable[elModule]
 		if !ok {

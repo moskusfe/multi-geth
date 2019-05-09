@@ -94,13 +94,10 @@ func (r *serviceRegistry) registerName(name string, rcvr interface{}) error {
 
 // callback returns the callback corresponding to the given RPC method name.
 func (r *serviceRegistry) callback(method string) *callback {
-	elem, err := elementizeMethodName(method)
-	if len(elem) != 2 || err != nil {
-		return nil
-	}
+	elems := elementizeMethodName(method)
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	return r.services[elem[0]].callbacks[elem[1]]
+	return r.services[elems[0]].callbacks[elems[1]]
 }
 
 // subscription returns a subscription callback in the given service.
