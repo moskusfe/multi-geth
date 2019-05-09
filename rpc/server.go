@@ -219,6 +219,8 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 	// because it's possible that exposed APIs could be modified in proc.
 	schemaMethodsAvailable := []map[string]interface{}{}
 	serverMethodsAvailable := s.methods()
+
+methodsloop:
 	for _, m := range schema.Methods {
 		els, err := elementizeMethodName(m["name"].(string))
 		if err != nil {
@@ -226,19 +228,16 @@ func (s *RPCService) Discover() (schema *OpenRPCDiscoverSchemaT, err error) {
 		}
 		elModule, elPath := els[0], els[1]
 		paths, ok := serverMethodsAvailable[elModule]
-		if ok {
-			// the module exists, does the path exist?
-			var matched bool
-			for _, m := range paths {
-				if m == elPath {
-					matched = true
-					break
-				}
-			}
-			ok = matched
+		if !ok {
+			continue methodsloop
 		}
-		if ok {
-			schemaMethodsAvailable = append(schemaMethodsAvailable, m)
+
+		// the module exists, does the path exist?
+		for _, pa := range paths {
+			if pa == elPath {
+				schemaMethodsAvailable = append(schemaMethodsAvailable, m)
+				continue methodsloop
+			}
 		}
 	}
 	schema.Methods = schemaMethodsAvailable
