@@ -1,7 +1,6 @@
 package openrpc_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/internal/openrpc"
@@ -10,7 +9,6 @@ import (
 
 func TestDefaultSchema(t *testing.T) {
 	if err := rpc.SetDefaultOpenRPCSchemaRaw(openrpc.OpenRPCSchema); err != nil {
-		fmt.Println(err)
-		t.Fail()
+		t.Fatal(err)
 	}
 }
