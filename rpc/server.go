@@ -81,8 +81,8 @@ func validateOpenRPCSchemaRaw(schemaJSON string) error {
 	if schemaJSON == "" {
 		return errOpenRPCDiscoverSchemaInvalid
 	}
-	var schema *OpenRPCDiscoverSchemaT
-	if err := json.Unmarshal([]byte(schemaJSON), schema); err != nil {
+	var schema OpenRPCDiscoverSchemaT
+	if err := json.Unmarshal([]byte(schemaJSON), &schema); err != nil {
 		return fmt.Errorf("%v: %v", errOpenRPCDiscoverSchemaInvalid, err)
 	}
 	return nil
