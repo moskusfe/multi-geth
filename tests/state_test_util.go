@@ -121,7 +121,10 @@ func (t *StateTest) Subtests() []StateSubtest {
 }
 
 // Run executes a specific subtest.
+// NOTE: tests run subtests
 func (t *StateTest) Run(subtest StateSubtest, vmconfig vm.Config) (*state.StateDB, error) {
+	// NOTE: subtest.Fork
+	// This is where the state test "Fork" field is matched to Chain Configuration.
 	config, ok := Forks[subtest.Fork]
 	if !ok {
 		return nil, UnsupportedForkError{subtest.Fork}

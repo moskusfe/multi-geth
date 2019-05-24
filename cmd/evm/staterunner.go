@@ -95,6 +95,7 @@ func stateTestCmd(ctx *cli.Context) error {
 	for key, test := range tests {
 		for _, st := range test.Subtests() {
 			// Run the test and aggregate the result
+			// NOTE: test result Fork
 			result := &StatetestResult{Name: key, Fork: st.Fork, Pass: true}
 			state, err := test.Run(st, cfg)
 			// print state root for evmlab tracing
