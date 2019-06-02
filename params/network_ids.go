@@ -27,4 +27,5 @@ const (
 	NetworkIDGoerli      = 5
 	NetworkIDKotti       = 6
 	NetworkIDDeveloper   = 1337
+	NetworkIDMusicoin    = int(0x76740f)
 )
