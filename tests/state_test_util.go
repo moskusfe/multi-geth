@@ -54,12 +54,28 @@ func (t *StateTest) UnmarshalJSON(in []byte) error {
 	return json.Unmarshal(in, &t.json)
 }
 
+func (t StateTest) MarshalJSON(name string) ([]byte, error) {
+	var x = map[string]stJSON{
+		name: t.json,
+	}
+	return json.MarshalIndent(x, "", "    ")
+}
+
 type stJSON struct {
+	Info stInfo                   `json:"_info"`
 	Env  stEnv                    `json:"env"`
 	Pre  core.GenesisAlloc        `json:"pre"`
 	Tx   stTransaction            `json:"transaction"`
-	Out  hexutil.Bytes            `json:"out"`
+	Out  hexutil.Bytes            `json:"out,omitempty"`
 	Post map[string][]stPostState `json:"post"`
+}
+
+type stInfo struct {
+	Comment     string `json:"comment"`
+	FilledWith  string `json:"filledWith"`
+	LLLCVersion string `json:"lllcversion"`
+	Source      string `json:"source"`
+	SourceHash  string `json:"sourceHash"`
 }
 
 type stPostState struct {
@@ -69,7 +85,7 @@ type stPostState struct {
 		Data  int `json:"data"`
 		Gas   int `json:"gas"`
 		Value int `json:"value"`
-	}
+	} `json:"indexes"`
 }
 
 //go:generate gencodec -type stEnv -field-override stEnvMarshaling -out gen_stenv.go
@@ -126,6 +142,7 @@ func (t *StateTest) Run(subtest StateSubtest, vmconfig vm.Config) (*state.StateD
 	if !ok {
 		return nil, UnsupportedForkError{subtest.Fork}
 	}
+
 	block := t.genesis(config).ToBlock(nil)
 	statedb := MakePreState(rawdb.NewMemoryDatabase(), t.json.Pre)
 
@@ -162,6 +179,84 @@ func (t *StateTest) Run(subtest StateSubtest, vmconfig vm.Config) (*state.StateD
 	if logs := rlpHash(statedb.Logs()); logs != common.Hash(post.Logs) {
 		return statedb, fmt.Errorf("post state logs hash mismatch: got %x, want %x", logs, post.Logs)
 	}
+
+	// Test has passed, no error being returned.
+	// Now run the same subtest, but instead of only reading, we're also going
+	// to assign values and write.
+
+	return statedb, nil
+}
+
+// Run executes a specific subtest.
+func (t *StateTest) Gen(refSubtest, newSubtest StateSubtest, vmconfig vm.Config) (*state.StateDB, error) {
+	config, ok := Forks[newSubtest.Fork]
+	if !ok {
+		return nil, UnsupportedForkError{newSubtest.Fork}
+	}
+
+	block := t.genesis(config).ToBlock(nil)
+	statedb := MakePreState(rawdb.NewMemoryDatabase(), t.json.Pre)
+
+	post := t.json.Post[refSubtest.Fork][refSubtest.Index]
+	msg, err := t.json.Tx.toMessage(post)
+	if err != nil {
+		return nil, err
+	}
+	context := core.NewEVMContext(msg, block.Header(), nil, &t.json.Env.Coinbase)
+	context.GetHash = vmTestBlockHash
+	evm := vm.NewEVM(context, statedb, config, vmconfig)
+
+	gaspool := new(core.GasPool)
+	gaspool.AddGas(block.GasLimit())
+	snapshot := statedb.Snapshot()
+	if _, _, _, err := core.ApplyMessage(evm, msg, gaspool); err != nil {
+		statedb.RevertToSnapshot(snapshot)
+	}
+	// Commit block
+	statedb.Commit(config.IsEIP161F(block.Number()))
+	// Add 0-value mining reward. This only makes a difference in the cases
+	// where
+	// - the coinbase suicided, or
+	// - there are only 'bad' transactions, which aren't executed. In those cases,
+	//   the coinbase gets no txfee, so isn't created, and thus needs to be touched
+	statedb.AddBalance(block.Coinbase(), new(big.Int))
+	// And _now_ get the state root
+	root := statedb.IntermediateRoot(config.IsEIP161F(block.Number()))
+	logs := rlpHash(statedb.Logs())
+
+	// type stPostState struct {
+	// 	Root    common.UnprefixedHash `json:"hash"`
+	// 	Logs    common.UnprefixedHash `json:"logs"`
+	// 	Indexes struct {
+	// 		Data  int `json:"data"`
+	// 		Gas   int `json:"gas"`
+	// 		Value int `json:"value"`
+	// 	}
+	// }
+
+	newPost := stPostState{
+		Root:    common.UnprefixedHash(root),
+		Logs:    common.UnprefixedHash(logs),
+		Indexes: post.Indexes,
+	}
+	if t.json.Post[newSubtest.Fork] == nil || len(t.json.Post[newSubtest.Fork]) == 0 {
+		t.json.Post[newSubtest.Fork] = make([]stPostState, len(t.json.Post[refSubtest.Fork]))
+	}
+	t.json.Post[newSubtest.Fork][newSubtest.Index] = newPost
+
+	// // N.B: We need to do this in a two-step process, because the first Commit takes care
+	// // of suicides, and we need to touch the coinbase _after_ it has potentially suicided.
+	// if root != common.Hash(post.Root) {
+	// 	return statedb, fmt.Errorf("post state root mismatch: got %x, want %x", root, post.Root)
+	// }
+	// if logs := rlpHash(statedb.Logs()); logs != common.Hash(post.Logs) {
+	// 	return statedb, fmt.Errorf("post state logs hash mismatch: got %x, want %x", logs, post.Logs)
+	// }
+
+	// Test has passed, no error being returned.
+	// Now run the same subtest, but instead of only reading, we're also going
+	// to assign values and write.
+
 	return statedb, nil
 }
 

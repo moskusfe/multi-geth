@@ -62,6 +62,7 @@ var (
 	ConstantinopleChainspec       = mustReadChainspec("constantinople_test.json")
 	ConstantinopleFixChainspec    = mustReadChainspec("st_peters_test.json")
 	EIP158ToByzantiumAt5Chainspec = mustReadChainspec("transition_test.json")
+	ClassicAtlantisChainspec      = mustReadChainspec("classic_atlantis_test.json")
 )
 
 // Forks table defines supported forks and their chain config.
@@ -76,6 +77,7 @@ var Forks = map[string]*params.ChainConfig{
 	"Constantinople":       ConstantinopleChainspec,
 	"ConstantinopleFix":    ConstantinopleFixChainspec,
 	"EIP158ToByzantiumAt5": EIP158ToByzantiumAt5Chainspec,
+	"ClassicAtlantis":      ClassicAtlantisChainspec,
 
 	// "Frontier": {
 	// 	ChainID: big.NewInt(1),

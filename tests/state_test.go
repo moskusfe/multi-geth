@@ -21,6 +21,9 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"reflect"
 	"testing"
 
@@ -28,10 +31,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-func TestState(t *testing.T) {
-	t.Parallel()
-
-	st := new(testMatcher)
+func StSlowSkipFail(st *testMatcher) {
 	// Long tests:
 	st.slow(`^stAttackTest/ContractCreationSpam`)
 	st.slow(`^stBadOpcode/badOpcodes`)
@@ -52,10 +52,38 @@ func TestState(t *testing.T) {
 	st.fails(`^stRevertTest/RevertPrecompiledTouch(_storage)?\.json/Constantinople/3`, "bug in test")
 	st.fails(`^stRevertTest/RevertPrecompiledTouch(_storage)?\.json/ConstantinopleFix/0`, "bug in test")
 	st.fails(`^stRevertTest/RevertPrecompiledTouch(_storage)?\.json/ConstantinopleFix/3`, "bug in test")
+}
+
+func TestState(t *testing.T) {
+	t.Parallel()
+
+	st := new(testMatcher)
+	StSlowSkipFail(st)
+
+	refStateGen := map[string]string{
+		"ClassicAtlantis": "ConstantinopleFix",
+	}
 
 	st.walk(t, stateTestDir, func(t *testing.T, name string, test *StateTest) {
+
+		// If genSubtest does not exist,
+		// it will be generated using the ref statesubtest as a reference;
+		// this will copy the indexed values (gas, ...).
+		refStateGenSubtests := make(map[string]map[string][]int, len(refStateGen))
+		for k := range refStateGen {
+			refStateGenSubtests[k] = make(map[string][]int)
+		}
+
+		// Subtest = fork, index
 		for _, subtest := range test.Subtests() {
-			subtest := subtest
+			// Look through refStateGen map to see if this subtest's Fork is used as a ref
+		look:
+			for k, v := range refStateGen {
+				if v == subtest.Fork {
+					refStateGenSubtests[k][subtest.Fork] = append(refStateGenSubtests[k][subtest.Fork], subtest.Index)
+					break look
+				}
+			}
 			key := fmt.Sprintf("%s/%d", subtest.Fork, subtest.Index)
 			name := name + "/" + key
 			t.Run(key, func(t *testing.T) {
@@ -64,6 +92,37 @@ func TestState(t *testing.T) {
 					return st.checkFailure(t, name, err)
 				})
 			})
+		}
+
+		for k, v := range refStateGenSubtests {
+			for refFork, subrefIndexes := range v {
+				for _, subrefIndex := range subrefIndexes {
+					log.Println("refgen", k, v, refFork, subrefIndex)
+					newStateSubTest := StateSubtest{k, subrefIndex}
+
+					key := fmt.Sprintf("%s/%d", newStateSubTest.Fork, newStateSubTest.Index)
+					t.Run(key, func(t *testing.T) {
+						withTrace(t, test.gasLimit(StateSubtest{refFork, subrefIndex}), func(vmconfig vm.Config) error {
+							// _, err := test.Run(subtest, vmconfig)
+							_, e2 := test.Gen(StateSubtest{refFork, subrefIndex}, newStateSubTest, testVMConfig)
+							err := st.checkFailure(t, name, e2)
+							if err == nil {
+								b, merr := test.MarshalJSON(name)
+								if merr != nil {
+									t.Fatal(merr)
+								}
+								p, ok := filemapNamePath[name]
+								if !ok {
+									t.Fatal("no path for name", name)
+								}
+								return ioutil.WriteFile(p, b, os.ModePerm)
+							}
+							return err
+						})
+					})
+
+				}
+			}
 		}
 	})
 }

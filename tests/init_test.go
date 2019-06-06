@@ -33,8 +33,10 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 )
 
+var filemapNamePath = make(map[string]string)
+
 var (
-	baseDir            = filepath.Join(".", "testdata")
+	baseDir            = filepath.Join(".", "testdata2")
 	blockTestDir       = filepath.Join(baseDir, "BlockchainTests")
 	stateTestDir       = filepath.Join(baseDir, "GeneralStateTests")
 	transactionTestDir = filepath.Join(baseDir, "TransactionTests")
@@ -205,6 +207,7 @@ func (tm *testMatcher) walk(t *testing.T, dir string, runTest interface{}) {
 			return nil
 		}
 		if filepath.Ext(path) == ".json" {
+			filemapNamePath[name] = path
 			t.Run(name, func(t *testing.T) { tm.runTestFile(t, path, name, runTest) })
 		}
 		return nil
