@@ -54,30 +54,32 @@ func mustReadChainspecBytes(input []byte) *params.ChainConfig {
 }
 
 var (
-	FrontierChainspec             = mustReadChainspec("frontier_test.json")
-	HomesteadChainspec            = mustReadChainspec("homestead_test.json")
-	EIP150Chainspec               = mustReadChainspec("eip150_test.json")
-	EIP158Chainspec               = mustReadChainspec("eip161_test.json")
-	ByzantiumChainspec            = mustReadChainspec("byzantium_test.json")
-	ConstantinopleChainspec       = mustReadChainspec("constantinople_test.json")
-	ConstantinopleFixChainspec    = mustReadChainspec("st_peters_test.json")
-	EIP158ToByzantiumAt5Chainspec = mustReadChainspec("transition_test.json")
-	ClassicAtlantisChainspec      = mustReadChainspec("classic_atlantis_test.json")
+	FrontierChainspec                         = mustReadChainspec("frontier_test.json")
+	HomesteadChainspec                        = mustReadChainspec("homestead_test.json")
+	EIP150Chainspec                           = mustReadChainspec("eip150_test.json")
+	EIP158Chainspec                           = mustReadChainspec("eip161_test.json")
+	ByzantiumChainspec                        = mustReadChainspec("byzantium_test.json")
+	ConstantinopleChainspec                   = mustReadChainspec("constantinople_test.json")
+	ConstantinopleFixChainspec                = mustReadChainspec("st_peters_test.json")
+	EIP158ToByzantiumAt5Chainspec             = mustReadChainspec("transition_test.json")
+	ClassicAtlantisConstantinopleFixChainspec = mustReadChainspec("classic_atlantis_constantinoplefix_test.json")
+	ClassicAtlantisByzantiumChainspec         = mustReadChainspec("classic_atlantis_byzantium_test.json")
 )
 
 // Forks table defines supported forks and their chain config.
 var Forks = map[string]*params.ChainConfig{
 	// https://github.com/paritytech/parity-ethereum/blob/1871275ecdf02431bf67d09a1b25be8ff8916e3a/ethcore/src/client/evm_test_client.rs#L98
 	// https://github.com/paritytech/parity-ethereum/blob/0199acbece836c49e07410796c40c185e9051451/ethcore/src/ethereum/mod.rs#L129
-	"Frontier":             FrontierChainspec,
-	"Homestead":            HomesteadChainspec,
-	"EIP150":               EIP150Chainspec,
-	"EIP158":               EIP158Chainspec,
-	"Byzantium":            ByzantiumChainspec,
-	"Constantinople":       ConstantinopleChainspec,
-	"ConstantinopleFix":    ConstantinopleFixChainspec,
-	"EIP158ToByzantiumAt5": EIP158ToByzantiumAt5Chainspec,
-	"ClassicAtlantis":      ClassicAtlantisChainspec,
+	"Frontier":                         FrontierChainspec,
+	"Homestead":                        HomesteadChainspec,
+	"EIP150":                           EIP150Chainspec,
+	"EIP158":                           EIP158Chainspec,
+	"Byzantium":                        ByzantiumChainspec,
+	"Constantinople":                   ConstantinopleChainspec,
+	"ConstantinopleFix":                ConstantinopleFixChainspec,
+	"EIP158ToByzantiumAt5":             EIP158ToByzantiumAt5Chainspec,
+	"ClassicAtlantisConstantinopleFix": ClassicAtlantisConstantinopleFixChainspec,
+	"ClassicAtlantisByzantium":         ClassicAtlantisByzantiumChainspec,
 
 	// "Frontier": {
 	// 	ChainID: big.NewInt(1),
