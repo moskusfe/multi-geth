@@ -50,6 +50,8 @@ func precheckSputnikVMTransaction(config *params.ChainConfig, statedb *state.Sta
 }
 
 func ApplySputnikTransaction(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config) (*types.Receipt, uint64, error) {
+
+	log.Println("running ApplySputnikTransaction")
 	// Pre-check is needed as SputnikVM-FFI relies on Valid Transactions to be provided.
 	err := precheckSputnikVMTransaction(config, statedb, header, tx, usedGas)
 	if err != nil {

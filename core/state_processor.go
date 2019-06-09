@@ -17,8 +17,6 @@
 package core
 
 import (
-	"reflect"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
@@ -88,27 +86,36 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 // for the transaction, gas used and an error if the transaction failed,
 // indicating the block was invalid.
 func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config) (*types.Receipt, uint64, error) {
-	s1 := statedb.Copy()
-	s2 := statedb.Copy()
+	// s1 := statedb.Copy()
+	// s2 := statedb.Copy()
 
-	r1, g1, e1 := ApplySputnikTransaction(config, bc, author, gp, s1, header, tx, usedGas, cfg)
-	r2, g2, e2 := applyTransaction(config, bc, author, gp, s2, header, tx, usedGas, cfg)
+	// var ug1, ug2 uint64
+	// ug1 = *usedGas
+	// ug2 = *usedGas
 
-	if r1 != r2 {
-		panic("!=r")
-	}
-	if g1 != g2 {
-		panic("!=g")
-	}
-	if e1 != e2 {
-		panic("!=e")
-	}
-	if s1.IntermediateRoot(config.IsEIP161F(header.Number)) != s2.IntermediateRoot(config.IsEIP161F(header.Number)) {
-		panic("!=simroot")
-	}
-	if !reflect.DeepEqual(s1.RawDump(), s2.RawDump()) {
-		panic("!=srawdump")
-	}
+	// r1, g1, e1 := ApplySputnikTransaction(config, bc, author, gp, s1, header, tx, &ug1, cfg)
+	// r2, g2, e2 := applyTransaction(config, bc, author, gp, s2, header, tx, &ug2, cfg)
+	// if !reflect.DeepEqual(e1, e2) {
+	// 	panic(fmt.Sprintln("!=e", e1, e2))
+	// }
+	// if !reflect.DeepEqual(r1, r2) {
+	// 	diff := deep.Equal(r1, r2)
+	// 	for _, d := range diff {
+	// 		log.Println(d)
+	// 	}
+	// 	log.Println("svm receipts", spew.Sdump(r1))
+	// 	log.Println("evm receipts", spew.Sdump(r2))
+	// 	panic("!=r")
+	// }
+	// if g1 != g2 {
+	// 	panic("!=g")
+	// }
+	// if s1.IntermediateRoot(config.IsEIP161F(header.Number)) != s2.IntermediateRoot(config.IsEIP161F(header.Number)) {
+	// 	panic("!=simroot")
+	// }
+	// if !reflect.DeepEqual(s1.RawDump(), s2.RawDump()) {
+	// 	panic("!=srawdump")
+	// }
 
 	if cfg.EVMInterpreter == "svm" {
 		return ApplySputnikTransaction(config, bc, author, gp, statedb, header, tx, usedGas, cfg)

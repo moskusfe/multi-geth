@@ -1,0 +1,11 @@
+/home/ia/go/src/github.com/ethereum/go-ethereum/vendor/github.com/ethereumproject/evm-ffi/c/ffi/target/release/deps/libucd_util-86cb75052d66ff9c.rlib: /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/lib.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/hangul.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/ideograph.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/name.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/property.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/unicode_tables/mod.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/unicode_tables/jamo_short_name.rs
+
+/home/ia/go/src/github.com/ethereum/go-ethereum/vendor/github.com/ethereumproject/evm-ffi/c/ffi/target/release/deps/ucd_util-86cb75052d66ff9c.d: /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/lib.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/hangul.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/ideograph.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/name.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/property.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/unicode_tables/mod.rs /home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/unicode_tables/jamo_short_name.rs
+
+/home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/lib.rs:
+/home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/hangul.rs:
+/home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/ideograph.rs:
+/home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/name.rs:
+/home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/property.rs:
+/home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/unicode_tables/mod.rs:
+/home/ia/.cargo/registry/src/github.com-1ecc6299db9ec823/ucd-util-0.1.3/src/unicode_tables/jamo_short_name.rs:
