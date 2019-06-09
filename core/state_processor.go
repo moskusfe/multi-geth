@@ -17,6 +17,15 @@
 package core
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"reflect"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
@@ -81,42 +90,176 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 	return receipts, allLogs, *usedGas, nil
 }
 
+var errEVMMismatch = errors.New("mismatched evm results")
+
+func evmMismatchErr(f string, in ...interface{}) error {
+	return fmt.Errorf("%s: %s", errEVMMismatch, fmt.Sprintf(f, in...))
+}
+func isEVMMismatchError(err error) bool {
+	return strings.HasPrefix(err.Error(), errEVMMismatch.Error())
+}
+
+func compareEVMs(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config) error {
+	s0 := statedb.Copy()
+	s1 := statedb.Copy()
+	s2 := statedb.Copy()
+
+	var ug1, ug2 uint64
+	ug1 = *usedGas
+	ug2 = *usedGas
+
+	gp1 := new(GasPool)
+	gp2 := new(GasPool)
+	*gp1 = *gp
+	*gp2 = *gp
+
+	r1, g1, e1 := ApplySputnikTransaction(config, bc, author, gp1, s1, header, tx, &ug1, cfg)
+	r2, g2, e2 := applyTransaction(config, bc, author, gp2, s2, header, tx, &ug2, cfg)
+
+	var err error
+	if g1 != g2 {
+		err = evmMismatchErr("gasUsed - svm: %v, gvm: %v", g1, g2)
+	} else if !reflect.DeepEqual(r1, r2) {
+		err = evmMismatchErr("receipts - svm: %v, gvm: %v", r1, r2)
+	} else if (e1 == nil && e2 != nil) || (e1 != nil && e2 == nil) {
+		err = evmMismatchErr("err yes/no - svm: %v, gvm: %v", e1, e2)
+	} else if (e1 != nil && e2 != nil) && (e1.Error() != e2.Error()) {
+		err = evmMismatchErr("err diff - svm: %v, gvm: %v", e1.Error(), e2.Error())
+	} else if s1.IntermediateRoot(config.IsEIP161F(header.Number)) != s2.IntermediateRoot(config.IsEIP161F(header.Number)) {
+		err = evmMismatchErr("stateroot - svm: %v, gvm: %v", s1.IntermediateRoot(config.IsEIP161F(header.Number)), s2.IntermediateRoot(config.IsEIP161F(header.Number)))
+	} else if !reflect.DeepEqual(s1, s2) {
+		err = evmMismatchErr("state - svm: %v, gvm: %v", "state1", "state2")
+	}
+
+	if err == nil {
+		return nil
+	}
+
+	// Finalise the changes on both states concurrently
+	done := make(chan struct{})
+	go func() {
+		s1.Finalise(config.IsEIP161F(header.Number))
+		close(done)
+	}()
+	s2.Finalise(config.IsEIP161F(header.Number))
+	<-done
+
+	errResult := map[string]string{
+		"g1":    fmt.Sprintf("%v", g1),
+		"g2":    fmt.Sprintf("%v", g2),
+		"e1":    fmt.Sprintf("%v", e1),
+		"e2":    fmt.Sprintf("%v", e2),
+		"error": err.Error(),
+	}
+
+	outDir := filepath.Join(os.Getenv("HOME"),
+		"mgsvm-debug",
+		fmt.Sprintf("%v", header.Number),
+		tx.Hash().Hex(),
+	)
+	err = os.MkdirAll(outDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	eb, err := json.MarshalIndent(errResult, "", "    ")
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(outDir, "err.json"), eb, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(filepath.Join(outDir, "state-pre.json"), s0.Dump(), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(filepath.Join(outDir, "state-post-svm.json"), s1.Dump(), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(filepath.Join(outDir, "state-post-gvm.json"), s2.Dump(), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	headerB, err := header.MarshalJSON()
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(outDir, "header.json"), headerB, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	txB, err := tx.MarshalJSON()
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(outDir, "tx.json"), txB, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	for i, l := range s1.Logs() {
+		lb, err := l.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(outDir, fmt.Sprintf("logs-post-svm-%d.json", i)), lb, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	for i, l := range s2.Logs() {
+		lb, err := l.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(outDir, fmt.Sprintf("logs-post-gvm-%d.json", i)), lb, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	if r1 != nil {
+		r1b, err := r1.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(outDir, "receipt-svm.json"), r1b, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	if r2 != nil {
+		r2b, err := r2.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(outDir, "receipt-gvm.json"), r2b, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
+}
+
 // ApplyTransaction attempts to apply a transaction to the given state database
 // and uses the input parameters for its environment. It returns the receipt
 // for the transaction, gas used and an error if the transaction failed,
 // indicating the block was invalid.
 func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config) (*types.Receipt, uint64, error) {
-	// s1 := statedb.Copy()
-	// s2 := statedb.Copy()
-
-	// var ug1, ug2 uint64
-	// ug1 = *usedGas
-	// ug2 = *usedGas
-
-	// r1, g1, e1 := ApplySputnikTransaction(config, bc, author, gp, s1, header, tx, &ug1, cfg)
-	// r2, g2, e2 := applyTransaction(config, bc, author, gp, s2, header, tx, &ug2, cfg)
-	// if !reflect.DeepEqual(e1, e2) {
-	// 	panic(fmt.Sprintln("!=e", e1, e2))
-	// }
-	// if !reflect.DeepEqual(r1, r2) {
-	// 	diff := deep.Equal(r1, r2)
-	// 	for _, d := range diff {
-	// 		log.Println(d)
-	// 	}
-	// 	log.Println("svm receipts", spew.Sdump(r1))
-	// 	log.Println("evm receipts", spew.Sdump(r2))
-	// 	panic("!=r")
-	// }
-	// if g1 != g2 {
-	// 	panic("!=g")
-	// }
-	// if s1.IntermediateRoot(config.IsEIP161F(header.Number)) != s2.IntermediateRoot(config.IsEIP161F(header.Number)) {
-	// 	panic("!=simroot")
-	// }
-	// if !reflect.DeepEqual(s1.RawDump(), s2.RawDump()) {
-	// 	panic("!=srawdump")
-	// }
-
+	err := compareEVMs(config, bc, author, gp, statedb, header, tx, usedGas, cfg)
+	if err != nil {
+		return nil, 0, err
+	}
 	if cfg.EVMInterpreter == "svm" {
 		return ApplySputnikTransaction(config, bc, author, gp, statedb, header, tx, usedGas, cfg)
 	}
