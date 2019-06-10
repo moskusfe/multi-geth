@@ -57,7 +57,7 @@ func ApplySputnikTransaction(config *params.ChainConfig, bc ChainContext, author
 	if err != nil {
 		return nil, 0, err
 	}
-
+	log.Println("debug1")
 	asSputnikAddress := func(a common.Address) [20]byte {
 		var addr [20]byte
 		addressBytes := a.Bytes()
@@ -84,6 +84,7 @@ func ApplySputnikTransaction(config *params.ChainConfig, bc ChainContext, author
 	if err != nil {
 		return nil, 0, err
 	}
+	log.Println("debug2")
 	var addr []byte
 	if tx.To() != nil {
 		addr = tx.To().Bytes()
@@ -109,7 +110,9 @@ func ApplySputnikTransaction(config *params.ChainConfig, bc ChainContext, author
 	// Get SputnikVM's corresponding chain config.
 	// TODO: handle chains that are not networkid=1 (ETH main), eg testnets, custom chains with custom state staring nonces
 	patch := makeSputnikVMPatch(config, header)
+	log.Println("debug3")
 	vm := sputnikvm.NewDynamic(patch, &vmtx, &vmheader)
+	log.Println("debug4")
 
 OUTER:
 	for {
@@ -152,6 +155,7 @@ OUTER:
 		}
 	}
 
+	log.Println("debug5")
 	// VM execution is finished at this point. We apply changes to the statedb.
 	for _, account := range vm.AccountChanges() {
 		switch account.Typ() {
@@ -193,6 +197,8 @@ OUTER:
 			panic("unreachable")
 		}
 	}
+
+	log.Println("debug6")
 	for _, log := range vm.Logs() {
 		var topics []common.Hash
 		for _, t := range log.Topics {
@@ -206,6 +212,7 @@ OUTER:
 			BlockNumber: currentNumber.Uint64(),
 		})
 	}
+	log.Println("debug7")
 
 	// Update the state with pending changes
 	var root []byte
@@ -235,9 +242,14 @@ OUTER:
 	receipt.BlockNumber = header.Number
 	receipt.TransactionIndex = uint(statedb.TxIndex())
 
+	log.Println("debug8")
+
 	// Free the patch and destroy machine
 	vm.Free()
+	log.Println("debug9")
 	patch.Free()
+
+	log.Println("debug10")
 
 	return receipt, gas, err
 }

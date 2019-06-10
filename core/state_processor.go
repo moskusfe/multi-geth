@@ -34,6 +34,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/go-test/deep"
 )
 
 // StateProcessor is a basic Processor, which takes care of transitioning
@@ -100,7 +101,6 @@ func isEVMMismatchError(err error) bool {
 }
 
 func compareEVMs(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config) error {
-	s0 := statedb.Copy()
 	s1 := statedb.Copy()
 	s2 := statedb.Copy()
 
@@ -113,10 +113,17 @@ func compareEVMs(config *params.ChainConfig, bc ChainContext, author *common.Add
 	*gp1 = *gp
 	*gp2 = *gp
 
+	if ug1 != *usedGas {
+		panic("invalid ug1")
+	} else if ug2 != *usedGas {
+		panic("invalid ug2")
+	}
+
 	r1, g1, e1 := ApplySputnikTransaction(config, bc, author, gp1, s1, header, tx, &ug1, cfg)
 	r2, g2, e2 := applyTransaction(config, bc, author, gp2, s2, header, tx, &ug2, cfg)
 
 	var err error
+	var stateDiffs []string
 	if g1 != g2 {
 		err = evmMismatchErr("gasUsed - svm: %v, gvm: %v", g1, g2)
 	} else if !reflect.DeepEqual(r1, r2) {
@@ -129,11 +136,14 @@ func compareEVMs(config *params.ChainConfig, bc ChainContext, author *common.Add
 		err = evmMismatchErr("stateroot - svm: %v, gvm: %v", s1.IntermediateRoot(config.IsEIP161F(header.Number)), s2.IntermediateRoot(config.IsEIP161F(header.Number)))
 	} else if !reflect.DeepEqual(s1, s2) {
 		err = evmMismatchErr("state - svm: %v, gvm: %v", "state1", "state2")
+		stateDiffs = deep.Equal(s1, s2)
 	}
 
 	if err == nil {
 		return nil
 	}
+
+	stateDiffsS := strings.Join(stateDiffs, "\n")
 
 	// Finalise the changes on both states concurrently
 	done := make(chan struct{})
@@ -145,11 +155,12 @@ func compareEVMs(config *params.ChainConfig, bc ChainContext, author *common.Add
 	<-done
 
 	errResult := map[string]string{
-		"g1":    fmt.Sprintf("%v", g1),
-		"g2":    fmt.Sprintf("%v", g2),
-		"e1":    fmt.Sprintf("%v", e1),
-		"e2":    fmt.Sprintf("%v", e2),
-		"error": err.Error(),
+		"g1":         fmt.Sprintf("%v", g1),
+		"g2":         fmt.Sprintf("%v", g2),
+		"e1":         fmt.Sprintf("%v", e1),
+		"e2":         fmt.Sprintf("%v", e2),
+		"error":      err.Error(),
+		"statediffs": stateDiffsS,
 	}
 
 	outDir := filepath.Join(os.Getenv("HOME"),
@@ -171,20 +182,21 @@ func compareEVMs(config *params.ChainConfig, bc ChainContext, author *common.Add
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(outDir, "state-pre.json"), s0.Dump(), os.ModePerm)
-	if err != nil {
-		return err
-	}
+	// These are much big, very long take.
+	// err = ioutil.WriteFile(filepath.Join(outDir, "state-pre.json"), statedb.Dump(), os.ModePerm)
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = ioutil.WriteFile(filepath.Join(outDir, "state-post-svm.json"), s1.Dump(), os.ModePerm)
-	if err != nil {
-		return err
-	}
+	// err = ioutil.WriteFile(filepath.Join(outDir, "state-post-svm.json"), s1.Dump(), os.ModePerm)
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = ioutil.WriteFile(filepath.Join(outDir, "state-post-gvm.json"), s2.Dump(), os.ModePerm)
-	if err != nil {
-		return err
-	}
+	// err = ioutil.WriteFile(filepath.Join(outDir, "state-post-gvm.json"), s2.Dump(), os.ModePerm)
+	// if err != nil {
+	// 	return err
+	// }
 
 	headerB, err := header.MarshalJSON()
 	if err != nil {
