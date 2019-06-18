@@ -61,9 +61,9 @@ func TestState(t *testing.T) {
 	StSlowSkipFail(st)
 
 	refStateGen := map[string]string{
-		"ClassicAtlantisByzantium":         "Byzantium",
-		"ClassicAtlantisConstantinople":    "Constantinople",
-		"ClassicAtlantisConstantinopleFix": "ConstantinopleFix",
+		"ClassicAtlantis": "Byzantium",
+		// "ClassicAtlantisConstantinople":    "Constantinople",
+		// "ClassicAtlantisConstantinopleFix": "ConstantinopleFix",
 	}
 
 	st.walk(t, stateTestDir, func(t *testing.T, name string, test *StateTest) {

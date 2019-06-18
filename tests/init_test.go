@@ -28,11 +28,13 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/params"
 )
 
+var filemapNamePathMu sync.Mutex
 var filemapNamePath = make(map[string]string)
 
 var (
@@ -207,7 +209,10 @@ func (tm *testMatcher) walk(t *testing.T, dir string, runTest interface{}) {
 			return nil
 		}
 		if filepath.Ext(path) == ".json" {
+			// FIXME: Yuck.
+			filemapNamePathMu.Lock()
 			filemapNamePath[name] = path
+			filemapNamePathMu.Unlock()
 			t.Run(name, func(t *testing.T) { tm.runTestFile(t, path, name, runTest) })
 		}
 		return nil
