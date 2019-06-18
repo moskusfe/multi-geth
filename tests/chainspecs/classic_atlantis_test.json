@@ -11,7 +11,7 @@
 				"eip100bTransition": "0x0",
 				"ecip1010PauseTransition": 0,
 				"ecip1010ContinueTransition": 0,
-				"ecip1017EraRounds": 0,
+				"ecip1017EraRounds": 2,
 				"bombDefuseTransition": 0,
 				"difficultyBombDelays": {
 					"0": 3000000
