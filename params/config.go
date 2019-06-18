@@ -33,18 +33,10 @@ var (
 	GoerliGenesisHash  = common.HexToHash("0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a")
 )
 
-// TrustedCheckpoints associates each known checkpoint with the genesis hash of
-// the chain it belongs to.
-var TrustedCheckpoints = map[common.Hash]*TrustedCheckpoint{
-	MainnetGenesisHash: MainnetTrustedCheckpoint,
-	TestnetGenesisHash: TestnetTrustedCheckpoint,
-	RinkebyGenesisHash: RinkebyTrustedCheckpoint,
-	GoerliGenesisHash:  GoerliTrustedCheckpoint,
-}
-
 var (
 	// MainnetChainConfig is the chain parameters to run a node on the main network.
 	MainnetChainConfig = &ChainConfig{
+		NetworkID:           1,
 		ChainID:             big.NewInt(1),
 		HomesteadBlock:      big.NewInt(1150000),
 		DAOForkBlock:        big.NewInt(1920000),
@@ -67,19 +59,18 @@ var (
 			new(big.Int).SetUint64(uint64(0x42ae50)): new(big.Int).SetUint64(uint64(0x2dc6c0)),
 			new(big.Int).SetUint64(uint64(0x6f1580)): new(big.Int).SetUint64(uint64(0x1e8480)),
 		},
-	}
-
-	// MainnetTrustedCheckpoint contains the light client trusted checkpoint for the main network.
-	MainnetTrustedCheckpoint = &TrustedCheckpoint{
-		Name:         "mainnet",
-		SectionIndex: 227,
-		SectionHead:  common.HexToHash("0xa2e0b25d72c2fc6e35a7f853cdacb193b4b4f95c606accf7f8fa8415283582c7"),
-		CHTRoot:      common.HexToHash("0xf69bdd4053b95b61a27b106a0e86103d791edd8574950dc96aa351ab9b9f1aa0"),
-		BloomRoot:    common.HexToHash("0xec1b454d4c6322c78ccedf76ac922a8698c3cac4d98748a84af4995b7bd3d744"),
+		TrustedCheckpoint: &TrustedCheckpoint{
+			Name:         "mainnet",
+			SectionIndex: 227,
+			SectionHead:  common.HexToHash("0xa2e0b25d72c2fc6e35a7f853cdacb193b4b4f95c606accf7f8fa8415283582c7"),
+			CHTRoot:      common.HexToHash("0xf69bdd4053b95b61a27b106a0e86103d791edd8574950dc96aa351ab9b9f1aa0"),
+			BloomRoot:    common.HexToHash("0xec1b454d4c6322c78ccedf76ac922a8698c3cac4d98748a84af4995b7bd3d744"),
+		},
 	}
 
 	// TestnetChainConfig contains the chain parameters to run a node on the Ropsten test network.
 	TestnetChainConfig = &ChainConfig{
+		NetworkID:           3,
 		ChainID:             big.NewInt(3),
 		HomesteadBlock:      big.NewInt(0),
 		DAOForkBlock:        big.NewInt(int64(0x40E80F)),
@@ -102,19 +93,18 @@ var (
 			big.NewInt(1700000): new(big.Int).SetUint64(uint64(0x2dc6c0)),
 			big.NewInt(4230000): new(big.Int).SetUint64(uint64(0x1e8480)),
 		},
-	}
-
-	// TestnetTrustedCheckpoint contains the light client trusted checkpoint for the Ropsten test network.
-	TestnetTrustedCheckpoint = &TrustedCheckpoint{
-		Name:         "testnet",
-		SectionIndex: 161,
-		SectionHead:  common.HexToHash("0x5378afa734e1feafb34bcca1534c4d96952b754579b96a4afb23d5301ecececc"),
-		CHTRoot:      common.HexToHash("0x1cf2b071e7443a62914362486b613ff30f60cea0d9c268ed8c545f876a3ee60c"),
-		BloomRoot:    common.HexToHash("0x5ac25c84bd18a9cbe878d4609a80220f57f85037a112644532412ba0d498a31b"),
+		TrustedCheckpoint: &TrustedCheckpoint{
+			Name:         "testnet",
+			SectionIndex: 161,
+			SectionHead:  common.HexToHash("0x5378afa734e1feafb34bcca1534c4d96952b754579b96a4afb23d5301ecececc"),
+			CHTRoot:      common.HexToHash("0x1cf2b071e7443a62914362486b613ff30f60cea0d9c268ed8c545f876a3ee60c"),
+			BloomRoot:    common.HexToHash("0x5ac25c84bd18a9cbe878d4609a80220f57f85037a112644532412ba0d498a31b"),
+		},
 	}
 
 	// RinkebyChainConfig contains the chain parameters to run a node on the Rinkeby test network.
 	RinkebyChainConfig = &ChainConfig{
+		NetworkID:           4,
 		ChainID:             big.NewInt(4),
 		HomesteadBlock:      big.NewInt(1),
 		DAOForkBlock:        nil,
@@ -140,19 +130,18 @@ var (
 			big.NewInt(1035301): new(big.Int).SetUint64(uint64(0x2dc6c0)),
 			big.NewInt(3660663): new(big.Int).SetUint64(uint64(0x1e8480)),
 		},
-	}
-
-	// RinkebyTrustedCheckpoint contains the light client trusted checkpoint for the Rinkeby test network.
-	RinkebyTrustedCheckpoint = &TrustedCheckpoint{
-		Name:         "rinkeby",
-		SectionIndex: 125,
-		SectionHead:  common.HexToHash("0x8a738386f6bb34add15846f8f49c4c519a2f32519096e792b9f43bcb407c831c"),
-		CHTRoot:      common.HexToHash("0xa1e5720a9bad4dce794f129e4ac6744398197b652868011486a6f89c8ec84a75"),
-		BloomRoot:    common.HexToHash("0xa3048fe8b7e30f77f11bc755a88478363d7d3e71c2bdfe4e8ab9e269cd804ba2"),
+		TrustedCheckpoint: &TrustedCheckpoint{
+			Name:         "rinkeby",
+			SectionIndex: 125,
+			SectionHead:  common.HexToHash("0x8a738386f6bb34add15846f8f49c4c519a2f32519096e792b9f43bcb407c831c"),
+			CHTRoot:      common.HexToHash("0xa1e5720a9bad4dce794f129e4ac6744398197b652868011486a6f89c8ec84a75"),
+			BloomRoot:    common.HexToHash("0xa3048fe8b7e30f77f11bc755a88478363d7d3e71c2bdfe4e8ab9e269cd804ba2"),
+		},
 	}
 
 	// GoerliChainConfig contains the chain parameters to run a node on the Görli test network.
 	GoerliChainConfig = &ChainConfig{
+		NetworkID:           5,
 		ChainID:             big.NewInt(5),
 		HomesteadBlock:      big.NewInt(0),
 		DAOForkBlock:        nil,
@@ -173,15 +162,13 @@ var (
 		DifficultyBombDelays: DifficultyBombDelaysT{
 			big.NewInt(0): new(big.Int).SetUint64(uint64(0x1e8480)),
 		},
-	}
-
-	// GoerliTrustedCheckpoint contains the light client trusted checkpoint for the Görli test network.
-	GoerliTrustedCheckpoint = &TrustedCheckpoint{
-		Name:         "goerli",
-		SectionIndex: 9,
-		SectionHead:  common.HexToHash("0x8e223d827391eee53b07cb8ee057dbfa11c93e0b45352188c783affd7840a921"),
-		CHTRoot:      common.HexToHash("0xe0a817ac69b36c1e437c5b0cff9e764853f5115702b5f66d451b665d6afb7e78"),
-		BloomRoot:    common.HexToHash("0x50d672aeb655b723284969c7c1201fb6ca003c23ed144bcb9f2d1b30e2971c1b"),
+		TrustedCheckpoint: &TrustedCheckpoint{
+			Name:         "goerli",
+			SectionIndex: 9,
+			SectionHead:  common.HexToHash("0x8e223d827391eee53b07cb8ee057dbfa11c93e0b45352188c783affd7840a921"),
+			CHTRoot:      common.HexToHash("0xe0a817ac69b36c1e437c5b0cff9e764853f5115702b5f66d451b665d6afb7e78"),
+			BloomRoot:    common.HexToHash("0x50d672aeb655b723284969c7c1201fb6ca003c23ed144bcb9f2d1b30e2971c1b"),
+		},
 	}
 
 	// AllEthashProtocolChanges contains every protocol change (EIPs) introduced
@@ -190,6 +177,7 @@ var (
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
 	AllEthashProtocolChanges = &ChainConfig{
+		0,
 		big.NewInt(1337), // ChainID
 
 		big.NewInt(0), // HomesteadBlock
@@ -245,6 +233,7 @@ var (
 		BlockRewardScheduleT{
 			new(big.Int).SetUint64(uint64(0x0)): new(big.Int).SetUint64(uint64(0x1bc16d674ec80000)),
 		},
+		nil,
 	}
 
 	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
@@ -253,6 +242,7 @@ var (
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
 	AllCliqueProtocolChanges = &ChainConfig{
+		0,
 		big.NewInt(1337), // ChainID
 
 		big.NewInt(0), // HomesteadBlock
@@ -311,10 +301,12 @@ var (
 		BlockRewardScheduleT{
 			big.NewInt(0): new(big.Int).SetUint64(uint64(0x1bc16d674ec80000)),
 		},
+		nil,
 	}
 
 	// TestChainConfig is used for tests.
 	TestChainConfig = &ChainConfig{
+		0,
 		big.NewInt(1), // ChainID
 
 		big.NewInt(0), // HomesteadBlock
@@ -370,6 +362,7 @@ var (
 		BlockRewardScheduleT{
 			new(big.Int).SetUint64(uint64(0x0)): new(big.Int).SetUint64(uint64(0x1bc16d674ec80000)),
 		},
+		nil,
 	}
 
 	// TestRules are all rules from TestChainConfig initialized at 0.
@@ -394,7 +387,8 @@ type TrustedCheckpoint struct {
 // that any network, identified by its genesis block, can have its own
 // set of configuration options.
 type ChainConfig struct {
-	ChainID *big.Int `json:"chainId"` // chainId identifies the current chain and is used for replay protection
+	NetworkID uint64   `json:"networkId"`
+	ChainID   *big.Int `json:"chainId"` // chainId identifies the current chain and is used for replay protection
 
 	// HF: Homestead
 	HomesteadBlock *big.Int `json:"homesteadBlock,omitempty"` // Homestead switch block (nil = no fork, 0 = already homestead)
@@ -507,6 +501,8 @@ type ChainConfig struct {
 
 	DifficultyBombDelays DifficultyBombDelaysT `json:"difficultyBombDelays,omitempty"`
 	BlockRewardSchedule  BlockRewardScheduleT  `json:"blockReward,omitempty"`
+
+	TrustedCheckpoint *TrustedCheckpoint `json:"trustedCheckpoint"`
 }
 
 type DifficultyBombDelaysT map[*big.Int]*big.Int
@@ -531,6 +527,7 @@ func (dbd *DifficultyBombDelaysT) UnmarshalJSON(input []byte) error {
 	*dbd = d
 	return nil
 }
+
 func (dbd DifficultyBombDelaysT) MarshalJSON() ([]byte, error) {
 	var m = make(map[string]string)
 	for k, v := range dbd {
@@ -582,9 +579,17 @@ func (c *ChainConfig) EthashBlockReward(n *big.Int) *big.Int {
 	if c == nil || n == nil {
 		return blockReward
 	}
+	// Because the map is not necessarily sorted low-high, we
+	// have to ensure that we're walking upwards only.
+	var lastActivation *big.Int
 	for activation, reward := range c.BlockRewardSchedule {
 		if isForked(activation, n) {
-			blockReward = reward
+			if lastActivation == nil {
+				lastActivation = new(big.Int).Set(activation)
+			}
+			if activation.Cmp(lastActivation) >= 0 {
+				blockReward = reward
+			}
 		}
 	}
 	return blockReward
@@ -851,18 +856,6 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 	}
 	if c.IsEIP155(head) && !configNumEqual(c.ChainID, newcfg.ChainID) {
 		return newCompatError("EIP155 chain ID", c.EIP155Block, newcfg.EIP155Block)
-	}
-	// Either Byzantium block must be set OR EIP100 and EIP649 must be equivalent
-	if newcfg.ByzantiumBlock == nil {
-		if !configNumEqual(newcfg.EIP100FBlock, newcfg.EIP649FBlock) {
-			return newCompatError("EIP100F/EIP649F not equal", newcfg.EIP100FBlock, newcfg.EIP649FBlock)
-		}
-		if isForkIncompatible(c.EIP100FBlock, newcfg.EIP649FBlock, head) {
-			return newCompatError("EIP100F/EIP649F fork block", c.EIP100FBlock, newcfg.EIP649FBlock)
-		}
-		if isForkIncompatible(c.EIP649FBlock, newcfg.EIP100FBlock, head) {
-			return newCompatError("EIP649F/EIP100F fork block", c.EIP649FBlock, newcfg.EIP100FBlock)
-		}
 	}
 	if isForkIncompatible(c.PetersburgBlock, newcfg.PetersburgBlock, head) {
 		return newCompatError("ConstantinopleFix fork block", c.PetersburgBlock, newcfg.PetersburgBlock)

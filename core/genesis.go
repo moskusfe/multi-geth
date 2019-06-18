@@ -22,9 +22,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"strings"
 
+	xspecparity "github.com/etclabscore/eth-x-chainspec/parity"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/math"
@@ -170,6 +172,22 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, constant
 		return genesis.Config, block.Hash(), err
 	}
 
+	// We have the genesis block in database(perhaps in ancient database)
+	// but the corresponding state is missing.
+	header := rawdb.ReadHeader(db, stored, 0)
+	if _, err := state.New(header.Root, state.NewDatabaseWithCache(db, 0)); err != nil {
+		if genesis == nil {
+			genesis = DefaultGenesisBlock()
+		}
+		// Ensure the stored genesis matches with the given one.
+		hash := genesis.ToBlock(nil).Hash()
+		if hash != stored {
+			return genesis.Config, hash, &GenesisMismatchError{stored, hash}
+		}
+		block, err := genesis.Commit(db)
+		return genesis.Config, block.Hash(), err
+	}
+
 	// Check whether the genesis block is already written.
 	if genesis != nil {
 		hash := genesis.ToBlock(nil).Hash()
@@ -291,6 +309,7 @@ func (g *Genesis) Commit(db ethdb.Database) (*types.Block, error) {
 	rawdb.WriteReceipts(db, block.Hash(), block.NumberU64(), nil)
 	rawdb.WriteCanonicalHash(db, block.Hash(), block.NumberU64())
 	rawdb.WriteHeadBlockHash(db, block.Hash())
+	rawdb.WriteHeadFastBlockHash(db, block.Hash())
 	rawdb.WriteHeadHeaderHash(db, block.Hash())
 
 	config := g.Config
@@ -363,6 +382,39 @@ func DefaultGoerliGenesisBlock() *Genesis {
 		Difficulty: big.NewInt(1),
 		Alloc:      decodePrealloc(goerliAllocData),
 	}
+}
+
+func ReadInBootnodesFromParityChainspec(fpath string) ([]string, error) {
+	b, err := ioutil.ReadFile(fpath)
+	if err != nil {
+		return nil, err
+	}
+	pc := xspecparity.Config{}
+	err = json.Unmarshal(b, &pc)
+	if err != nil {
+		return nil, err
+	}
+
+	return pc.Nodes, nil
+}
+
+func ReadInGenesisBlockFromParityChainSpec(fpath string) (*Genesis, error) {
+	log.Info("Reading chainspec (parity format)", "filepath", fpath)
+	b, err := ioutil.ReadFile(fpath)
+	if err != nil {
+		return nil, err
+	}
+	pc := xspecparity.Config{}
+	err = json.Unmarshal(b, &pc)
+	if err != nil {
+		return nil, err
+	}
+
+	gen := ParityConfigToMultiGethGenesis(&pc)
+	if gen == nil {
+		return gen, errors.New("failure to parse parity chainspec -> go-ethereum genesis")
+	}
+	return gen, nil
 }
 
 // DeveloperGenesisBlock returns the 'geth --dev' genesis block. Note, this must
