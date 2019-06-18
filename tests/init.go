@@ -78,8 +78,9 @@ var Forks = map[string]*params.ChainConfig{
 	"Constantinople":                   ConstantinopleChainspec,
 	"ConstantinopleFix":                ConstantinopleFixChainspec,
 	"EIP158ToByzantiumAt5":             EIP158ToByzantiumAt5Chainspec,
-	"ClassicAtlantisConstantinopleFix": ClassicAtlantisConstantinopleFixChainspec,
 	"ClassicAtlantisByzantium":         ClassicAtlantisByzantiumChainspec,
+	"ClassicAtlantisConstantinople":    ClassicAtlantisConstantinopleFixChainspec,
+	"ClassicAtlantisConstantinopleFix": ClassicAtlantisConstantinopleFixChainspec,
 
 	// "Frontier": {
 	// 	ChainID: big.NewInt(1),

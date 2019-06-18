@@ -62,6 +62,7 @@ func TestState(t *testing.T) {
 
 	refStateGen := map[string]string{
 		"ClassicAtlantisByzantium":         "Byzantium",
+		"ClassicAtlantisConstantinople":    "Constantinople",
 		"ClassicAtlantisConstantinopleFix": "ConstantinopleFix",
 	}
 

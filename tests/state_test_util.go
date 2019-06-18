@@ -56,13 +56,13 @@ func (t *StateTest) UnmarshalJSON(in []byte) error {
 
 func (t StateTest) MarshalJSON(name string) ([]byte, error) {
 	var x = map[string]stJSON{
-		name: t.json,
+		"name": t.json,
 	}
 	return json.MarshalIndent(x, "", "    ")
 }
 
 type stJSON struct {
-	Info stInfo                   `json:"_info"`
+	Info tInfo                    `json:"_info"`
 	Env  stEnv                    `json:"env"`
 	Pre  core.GenesisAlloc        `json:"pre"`
 	Tx   stTransaction            `json:"transaction"`
@@ -70,7 +70,7 @@ type stJSON struct {
 	Post map[string][]stPostState `json:"post"`
 }
 
-type stInfo struct {
+type tInfo struct {
 	Comment     string `json:"comment"`
 	FilledWith  string `json:"filledWith"`
 	LLLCVersion string `json:"lllcversion"`
