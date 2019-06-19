@@ -17,7 +17,12 @@
 package tests
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"math/big"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -43,6 +48,27 @@ var (
 			big.NewInt(4370000): new(big.Int).SetUint64(uint64(0x2dc6c0)),
 		},
 	}
+
+	byzantiumConfig = params.ChainConfig{
+		ByzantiumBlock: big.NewInt(0),
+		BlockRewardSchedule: params.BlockRewardScheduleT{
+			big.NewInt(0): new(big.Int).SetUint64(uint64(0x29a2241af62c0000)),
+		},
+		DifficultyBombDelays: params.DifficultyBombDelaysT{
+			big.NewInt(0): new(big.Int).SetUint64(uint64(0x2dc6c0)),
+		},
+	}
+
+	constantinopleConfig = params.ChainConfig{
+		ConstantinopleBlock: big.NewInt(0),
+		BlockRewardSchedule: params.BlockRewardScheduleT{
+			big.NewInt(0): new(big.Int).SetUint64(uint64(0x1bc16d674ec80000)),
+		},
+		DifficultyBombDelays: params.DifficultyBombDelaysT{
+			big.NewInt(0): new(big.Int).SetUint64(uint64(0x2dc6c0)),
+			big.NewInt(0): new(big.Int).SetUint64(uint64(0x1e8480)),
+		},
+	}
 )
 
 func TestDifficulty(t *testing.T) {
@@ -62,38 +88,21 @@ func TestDifficulty(t *testing.T) {
 	dt.skipLoad("difficultyMorden\\.json")
 	dt.skipLoad("difficultyOlimpic\\.json")
 
+	dt.config("MainNetwork", mainnetChainConfig)
+	dt.config("CustomMainNetwork", mainnetChainConfig)
 	dt.config("Ropsten", *params.TestnetChainConfig)
 	dt.config("Morden", *params.TestnetChainConfig)
 	dt.config("Frontier", params.ChainConfig{})
-
 	dt.config("Homestead", params.ChainConfig{
 		HomesteadBlock: big.NewInt(0),
 	})
-
-	dt.config("Byzantium", params.ChainConfig{
-		ByzantiumBlock: big.NewInt(0),
-		BlockRewardSchedule: params.BlockRewardScheduleT{
-			big.NewInt(0): new(big.Int).SetUint64(uint64(0x29a2241af62c0000)),
-		},
-		DifficultyBombDelays: params.DifficultyBombDelaysT{
-			big.NewInt(0): new(big.Int).SetUint64(uint64(0x2dc6c0)),
-		},
-	})
-
-	dt.config("Frontier", *params.TestnetChainConfig)
-	dt.config("MainNetwork", mainnetChainConfig)
-	dt.config("CustomMainNetwork", mainnetChainConfig)
-	dt.config("Constantinople", params.ChainConfig{
-		ConstantinopleBlock: big.NewInt(0),
-		BlockRewardSchedule: params.BlockRewardScheduleT{
-			big.NewInt(0): new(big.Int).SetUint64(uint64(0x1bc16d674ec80000)),
-		},
-		DifficultyBombDelays: params.DifficultyBombDelaysT{
-			big.NewInt(0): new(big.Int).SetUint64(uint64(0x2dc6c0)),
-			big.NewInt(0): new(big.Int).SetUint64(uint64(0x1e8480)),
-		},
-	})
+	// dt.config("Frontier", *params.TestnetChainConfig) // DUPE
+	dt.config("Byzantium", byzantiumConfig)
+	dt.config("Constantinople", constantinopleConfig)
+	dt.config("ClassicAtlantis", *ClassicAtlantis)
 	dt.config("difficulty.json", mainnetChainConfig)
+
+	var m = make(map[string]DifficultyTest)
 
 	dt.walk(t, difficultyTestDir, func(t *testing.T, name string, test *DifficultyTest) {
 		cfg := dt.findConfig(name)
@@ -101,8 +110,50 @@ func TestDifficulty(t *testing.T) {
 			t.Skip("difficulty below minimum")
 			return
 		}
-		if err := dt.checkFailure(t, name, test.Run(cfg)); err != nil {
+		err := dt.checkFailure(t, name, test.Run(cfg))
+		if err != nil {
 			t.Error(err)
+		} else {
+			// FIXME: hardcoded adhoc shit
+			// if !reflect.DeepEqual(cfg, byzantiumConfig) {
+			if !strings.Contains(name, "Byzantium") || strings.Contains(name, "Atlantis") {
+				return
+			}
+
+			t.Log("adding test", name)
+			old := new(big.Int).Set(test.CurrentDifficulty)
+			test.Gen(dt.findConfig("ClassicAtlantis"))
+			if old.Cmp(test.CurrentDifficulty) != 0 {
+				t.Log("diffdiff", old, test.CurrentDifficulty)
+			}
+			m[filepath.Base(name)] = *test
+
+			// Write the file each time a new test is added.
+			// FIXME
+			b, err := json.MarshalIndent(m, "", "    ")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = ioutil.WriteFile(filepath.Join(difficultyTestDir, "difficultyClassicAtlantis.json"), b, os.ModePerm)
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 	})
+
+	// t.Log("here")
+	// if len(m) > 0 {
+	// 	b, err := json.MarshalIndent(m, "", "    ")
+	// 	if err != nil {
+	// 		t.Fatal(err)
+	// 	}
+
+	// 	err = ioutil.WriteFile(filepath.Join(difficultyTestDir, "difficultyClassicAtlantis.json"), b, os.ModePerm)
+	// 	if err != nil {
+	// 		t.Fatal(err)
+	// 	}
+	// } else {
+	// 	t.Log("not writing test file")
+	// }
 }
