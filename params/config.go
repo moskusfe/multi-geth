@@ -178,6 +178,7 @@ var (
 		nil,           // EIP1052FBlock
 		nil,           // EIP1234FBlock
 		nil,           // EIP1283FBlock
+		nil,           // EIP1344FBlock
 
 		nil, // PetersburgBlock
 		nil, // EWASMBlock
@@ -238,6 +239,7 @@ var (
 		nil,           // EIP1052FBlock
 		nil,           // EIP1234FBlock
 		nil,           // EIP1283FBlock
+		nil,           // EIP1344FBlock
 
 		nil, // PetersburgBlock
 		nil, // EWASMBlock
@@ -297,6 +299,7 @@ var (
 		nil,           // EIP1052FBlock
 		nil,           // EIP1234FBlock
 		nil,           // EIP1283FBlock
+		nil,           // EIP1344FBlock
 
 		nil, // PetersburgBlock
 		nil, // EWASMBlock
@@ -432,6 +435,9 @@ type ChainConfig struct {
 	// Net gas metering
 	// https://eips.ethereum.org/EIPS/eip-1283
 	EIP1283FBlock *big.Int `json:"eip1283FBlock,omitempty"`
+
+	// Istanbul
+	EIP1344FBlock *big.Int `json:"eip1344FBlock,omitempty"`
 
 	PetersburgBlock *big.Int `json:"petersburgBlock,omitempty"` // Petersburg switch block (nil = same as Constantinople)
 
@@ -624,6 +630,10 @@ func (c *ChainConfig) IsEIP1234F(num *big.Int) bool {
 // IsEIP1283F returns whether num is equal to or greater than the Constantinople or EIP1283 block.
 func (c *ChainConfig) IsEIP1283F(num *big.Int) bool {
 	return !c.IsPetersburg(num) && (isForked(c.ConstantinopleBlock, num) || isForked(c.EIP1283FBlock, num))
+}
+
+func (c *ChainConfig) IsEIP1344F(num *big.Int) bool {
+	return isForked(c.EIP1344FBlock, num)
 }
 
 func (c *ChainConfig) IsBombDisposal(num *big.Int) bool {

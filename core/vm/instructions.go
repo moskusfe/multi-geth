@@ -596,6 +596,12 @@ func opGasLimit(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 	return nil, nil
 }
 
+func opChainID(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	chainID := interpreter.intPool.get().Set(interpreter.evm.chainConfig.ChainID)
+	stack.push(chainID)
+	return nil, nil
+}
+
 func opPop(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	interpreter.intPool.put(stack.pop())
 	return nil, nil

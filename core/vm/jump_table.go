@@ -159,6 +159,15 @@ func instructionSetForConfig(config *params.ChainConfig, bn *big.Int) [256]opera
 			valid:      true,
 		}
 	}
+	if config.IsEIP1344F(bn) {
+		instructionSet[CHAINID] = operation{
+			execute:     opChainID,
+			constantGas: GasQuickStep,
+			minStack:    minStack(0, 1),
+			maxStack:    maxStack(0, 1),
+			valid:       true,
+		}
+	}
 	return instructionSet
 }
 
